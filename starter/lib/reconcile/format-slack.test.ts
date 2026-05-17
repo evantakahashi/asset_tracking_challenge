@@ -56,11 +56,13 @@ describe("formatSlackPunchList", () => {
     expect(watchIdx).toBeGreaterThan(weekIdx);
   });
 
-  it("wraps tags in backticks for Slack mrkdwn", () => {
+  it("wraps tags in backticks and prepends a category code", () => {
     const r = emptyReport();
     r.tiers.today = [card({})];
     r.counts.today = 1;
-    expect(formatSlackPunchList(r, NOW)).toContain("`C0000001`");
+    const out = formatSlackPunchList(r, NOW);
+    expect(out).toContain("`C0000001`");
+    expect(out).toContain("[MIS]");
   });
 
   it("has no trailing whitespace or double-newlines", () => {

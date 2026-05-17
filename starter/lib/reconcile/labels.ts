@@ -21,3 +21,13 @@ export function labelFor(card: Pick<DriftCard, "category" | "context">): string 
 export function staticLabelFor(category: DriftCategory): string {
   return STATIC_LABELS[category];
 }
+
+export const CATEGORY_CODE: Record<DriftCategory, string> = {
+  mislocated: "MIS",
+  ghost_on_rack: "GHR",
+  orphan_on_rack: "ORP",
+  off_books: "OFB",
+  ghost_on_books: "GHB",
+  disposed_but_capitalized: "DBC",
+  stale_rack_obs: "STA",
+};
