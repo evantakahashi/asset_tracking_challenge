@@ -29,7 +29,7 @@ Open `http://localhost:3000`.
 
 ## Architecture in one paragraph
 
-Next.js App Router. Server components for the read-only manager pages (list, detail, reconcile). Client components for the four tech scan flows + the filter chips. Every mutation goes through a server-side route handler under `starter/app/api/scans/*` — these call the upstream scan endpoint, then trigger the appropriate writebacks to facilities + finance, keeping the bearer token off the browser. The reconciliation join is a server route handler at `starter/app/api/reconcile/route.ts`; the manager page just fetches its JSON output. A pure classifier function in `starter/lib/reconcile/classify.ts` is the most-tested piece of logic in the project — 17 cases covering every drift category, the "expected" buckets, the multi-category collision rule, and the NaN-date defense.
+Next.js App Router. Server components for the read-only manager pages (list, detail, reconcile). Client components for the four tech scan flows + the filter chips. Every mutation goes through a server-side route handler under `starter/app/api/scans/*` — these call the upstream scan endpoint, then trigger the appropriate writebacks to facilities + finance, keeping the bearer token off the browser. The reconciliation join is a server route handler at `starter/app/api/reconcile/route.ts`; the manager page just fetches its JSON output. A pure classifier function in `starter/lib/reconcile/classify.ts` is the most-tested piece of logic in the project — 18 cases covering every drift category, the "expected" buckets, the multi-category collision rule, the NaN-date defense, and the Tier-3 ambiguity sub-line.
 
 ## Three calls I nearly made the other way
 
@@ -53,7 +53,6 @@ Next.js App Router. Server components for the read-only manager pages (list, det
 | Parent-child asset relationships | Brief explicitly out-of-scope. |
 | Bulk import/export | Brief explicitly out-of-scope. |
 | Dark mode | Tech-at-11pm framing would justify it. Cost vs. polish elsewhere — picked elsewhere. Flagged as one of the "three calls" alternatives. |
-| Print stylesheet for `/manager/reconcile` | Tempting (a manager prints the punch list to bring to standup); not worth the time. |
 
 ## What we don't prevent (per CONTEXT.md)
 
