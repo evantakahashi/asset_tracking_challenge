@@ -22,7 +22,7 @@ describe("parseLocation", () => {
     });
   });
 
-  it("parses dock-shape locations with four segments (site/room/rack)", () => {
+  it("parses dock-shape locations as three segments (site/room/rack)", () => {
     expect(parseLocation("Lab-Building-A/Receiving/DOCK-2")).toEqual({
       site: "Lab-Building-A",
       room: "Receiving",
@@ -35,6 +35,12 @@ describe("parseLocation", () => {
   it("returns null for unparseable strings", () => {
     expect(parseLocation("")).toBeNull();
     expect(parseLocation("just-one-segment")).toBeNull();
+  });
+
+  it("returns null for 2-, 4-, and 6-segment inputs (only 3 and 5 are valid)", () => {
+    expect(parseLocation("A/B")).toBeNull();
+    expect(parseLocation("A/B/C/D")).toBeNull();
+    expect(parseLocation("A/B/C/D/E/F")).toBeNull();
   });
 
   it("trims segments and rejects empty interior segments", () => {
