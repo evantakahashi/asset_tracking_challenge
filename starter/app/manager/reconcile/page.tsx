@@ -1,10 +1,8 @@
 import { PageHeader } from "@/components/PageHeader";
 import { DriftCard } from "./_components/DriftCard";
 import { LastVisitBand } from "./_components/LastVisitBand";
-import { CopyForStandupButton } from "./_components/CopyForStandupButton";
 import { TrendWidget } from "./_components/TrendWidget";
 import { PrintLayout } from "./_components/PrintLayout";
-import { PrintButton } from "./_components/PrintButton";
 import { ReconcileStickyBar } from "./_components/ReconcileStickyBar";
 import type { ReconcileReport } from "@/lib/reconcile/types";
 
