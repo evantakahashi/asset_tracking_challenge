@@ -153,14 +153,17 @@ export function classifyDrift(
 
   // === Expected — scope difference, not drift ===
 
+  // Facilities only tracks racked equipment — so stored, received, RMA,
+  // and disposed assets are expected to NOT have a facilities row, full stop.
+  // (The DISPOSAL_LAG_DAYS window applies to the finance-side check, not here.)
   if (ops && !facilities) {
-    if (ops.state === "stored" || ops.state === "received" || ops.state === "rma_pending") {
+    if (
+      ops.state === "stored" ||
+      ops.state === "received" ||
+      ops.state === "rma_pending" ||
+      ops.state === "disposed"
+    ) {
       return { kind: "expected" };
-    }
-    if (ops.state === "disposed") {
-      const disposalAt = new Date(ops.updated_at);
-      const days = daysBetween(now, disposalAt);
-      if (days <= DISPOSAL_LAG_DAYS) return { kind: "expected" };
     }
   }
 

@@ -177,6 +177,13 @@ describe("classifyDrift", () => {
     ).toEqual({ kind: "expected" });
   });
 
+  it("marks expected: old disposed asset with retired finance and no facilities row (facilities never tracks disposed)", () => {
+    const old = new Date(NOW.getTime() - 200 * 86400_000).toISOString();
+    expect(
+      classifyDrift(ops({ state: "disposed", updated_at: old }), null, fin({ status: "retired" }), NOW),
+    ).toEqual({ kind: "expected" });
+  });
+
   it("highest-priority rule: ghost_on_rack wins over disposed_but_capitalized on the same asset", () => {
     const disposalAt = new Date(NOW.getTime() - (DISPOSAL_LAG_DAYS + 5) * 86400_000).toISOString();
     const result = classifyDrift(
