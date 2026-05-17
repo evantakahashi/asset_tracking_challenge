@@ -27,6 +27,7 @@ export type DriftCard = {
   };
   action: string;
   context?: string;
+  ambiguity?: string;
   // Best-guess age of the drift, in whole days. Derived from the most relevant
   // upstream timestamp (ops.updated_at where ops exists, facilities.last_observed
   // for orphan cases, finance.capitalized_on for ghost-on-books). Null if no

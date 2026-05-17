@@ -177,6 +177,7 @@ export function classifyDrift(
         views: { ops: opsView(ops), facilities: facView(facilities), finance: finance ? finView(finance) : null },
         action: "Schedule a rack re-scan — facilities hasn't observed this asset in a while.",
         context: `Last seen ${Math.floor(days)} days ago`,
+        ambiguity: "Could be facilities just hasn't audited recently; could be the asset was moved without scanning. The action is to find out which.",
         age_days: Math.floor(days),
       };
     }

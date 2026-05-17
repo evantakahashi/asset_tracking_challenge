@@ -151,6 +151,7 @@ describe("classifyDrift", () => {
     const stale = new Date(NOW.getTime() - (STALE_DAYS + 5) * 86400_000).toISOString();
     const result = classifyDrift(ops(), fac({ last_observed: stale }), fin(), NOW);
     expect(result).toMatchObject({ category: "stale_rack_obs", tier: "watch" });
+    expect((result as { ambiguity?: string }).ambiguity).toMatch(/find out which/i);
   });
 
   it("does NOT flag stale_rack_obs when within STALE_DAYS", () => {
