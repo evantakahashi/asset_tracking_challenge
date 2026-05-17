@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { RoleSwitcher } from "@/components/RoleSwitcher";
+import { AudioToggle } from "@/components/AudioToggle";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,7 +20,10 @@ export default function RootLayout({
         <header className="border-b border-neutral-200 bg-white">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <Link href="/" className="font-semibold tracking-tight">Asset tracking</Link>
-            <RoleSwitcher />
+            <div className="flex items-center gap-2">
+              <AudioToggle />
+              <RoleSwitcher />
+            </div>
           </div>
         </header>
         <main className="max-w-5xl mx-auto px-4 py-6">{children}</main>
