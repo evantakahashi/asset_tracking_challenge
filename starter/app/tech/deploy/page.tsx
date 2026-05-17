@@ -8,6 +8,7 @@ import { ScanLog } from "@/components/scan/ScanLog";
 import { ApiErrorBanner } from "@/components/ApiErrorBanner";
 import { api, ApiError } from "@/lib/api-client";
 import { useScanLog } from "@/lib/scan-log/use-scan-log";
+import { useScanFeedback } from "@/lib/scan-feedback/use-scan-feedback";
 import { getCurrentUserId } from "@/lib/auth";
 import { parseLocation, serializeLocation, isDeployLocationComplete } from "@/lib/location";
 import { formatLocationShort } from "@/lib/format";
@@ -30,6 +31,7 @@ const ERROR_MESSAGES = {
 export default function TechDeployPage(): React.ReactElement {
   const userId = getCurrentUserId();
   const log = useScanLog("deploy", userId);
+  const feedback = useScanFeedback();
   const [asset, setAsset] = useState<Asset | null>(null);
   const [error, setError] = useState<{ code: string; message: string; details?: any } | null>(null);
   const [receipt, setReceipt] = useState<Asset | null>(null);
@@ -41,6 +43,7 @@ export default function TechDeployPage(): React.ReactElement {
     try {
       const a = await api.assets.get(tag);
       if (a.state !== "received" && a.state !== "stored") {
+        feedback.error();
         setError({ code: "invalid_transition", message: "Wrong state", details: { from_state: a.state } });
         log.add({ kind: "error", asset_tag: tag, summary: `already ${a.state}` });
         return;
@@ -48,6 +51,7 @@ export default function TechDeployPage(): React.ReactElement {
       setAsset(a);
     } catch (e) {
       if (e instanceof ApiError) {
+        feedback.error();
         setError({ code: e.code, message: e.message, details: e.details });
         log.add({ kind: "error", asset_tag: tag, summary: e.code });
       }
@@ -61,6 +65,7 @@ export default function TechDeployPage(): React.ReactElement {
     try {
       const location = parseLocation(loc);
       if (!location || !isDeployLocationComplete(location)) {
+        feedback.error();
         setError({ code: "incomplete_deploy_location", message: "Need rack + ru" });
         log.add({ kind: "error", asset_tag: asset.asset_tag, summary: "incomplete location" });
         return;
@@ -77,12 +82,14 @@ export default function TechDeployPage(): React.ReactElement {
       });
       const json = await res.json();
       if (!res.ok) {
+        feedback.error();
         setError({ code: json.error?.code ?? "unknown_error", message: json.error?.message ?? "Unknown error", details: json.error?.details });
         log.add({ kind: "error", asset_tag: asset.asset_tag, summary: json.error?.code ?? "error" });
         setAsset(null);
         return;
       }
       setReceipt(json as Asset);
+      feedback.success();
       log.add({ kind: "success", asset_tag: asset.asset_tag, summary: `→ ${formatLocationShort(location)}` });
       setAsset(null);
     } finally {

@@ -8,6 +8,7 @@ import { ScanLog } from "@/components/scan/ScanLog";
 import { ApiErrorBanner } from "@/components/ApiErrorBanner";
 import { api, ApiError } from "@/lib/api-client";
 import { useScanLog } from "@/lib/scan-log/use-scan-log";
+import { useScanFeedback } from "@/lib/scan-feedback/use-scan-feedback";
 import { getCurrentUserId } from "@/lib/auth";
 import { parseLocation } from "@/lib/location";
 import type { Asset, AssetClass } from "@/lib/types";
@@ -37,6 +38,7 @@ const ERROR_MESSAGES = {
 export default function TechReceivePage(): React.ReactElement {
   const userId = getCurrentUserId();
   const log = useScanLog("receive", userId);
+  const feedback = useScanFeedback();
   const [mode, setMode] = useState<Mode>("idle");
   const [existing, setExisting] = useState<Asset | null>(null);
   const [pendingTag, setPendingTag] = useState<string>("");
@@ -60,6 +62,7 @@ export default function TechReceivePage(): React.ReactElement {
         setPendingTag(tag);
         setMode("new");
       } else if (e instanceof ApiError) {
+        feedback.error();
         setError({ code: e.code, message: e.message, details: e.details });
       }
     }
@@ -72,6 +75,7 @@ export default function TechReceivePage(): React.ReactElement {
     try {
       const location = parseLocation(dock);
       if (!location) {
+        feedback.error();
         setError({ code: "invalid_location", message: "Dock location is unparseable." });
         return;
       }
@@ -105,11 +109,13 @@ export default function TechReceivePage(): React.ReactElement {
       });
       const json = await res.json();
       if (!res.ok) {
+        feedback.error();
         setError({ code: json.error?.code ?? "unknown_error", message: json.error?.message ?? "Unknown error", details: json.error?.details });
         log.add({ kind: "error", asset_tag: pendingTag, summary: json.error?.code ?? "error" });
         return;
       }
       setReceipt(json as Asset);
+      feedback.success();
       log.add({ kind: "success", asset_tag: pendingTag, summary: mode === "new" ? "received (new)" : "duplicate_receive" });
       setMode("idle");
       setSerial("");

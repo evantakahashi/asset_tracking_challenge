@@ -8,6 +8,7 @@ import { ScanLog } from "@/components/scan/ScanLog";
 import { ApiErrorBanner } from "@/components/ApiErrorBanner";
 import { api, ApiError } from "@/lib/api-client";
 import { useScanLog } from "@/lib/scan-log/use-scan-log";
+import { useScanFeedback } from "@/lib/scan-feedback/use-scan-feedback";
 import { getCurrentUserId } from "@/lib/auth";
 import type { Asset } from "@/lib/types";
 
@@ -25,6 +26,7 @@ const ERROR_MESSAGES = {
 export default function TechTransferPage(): React.ReactElement {
   const userId = getCurrentUserId();
   const log = useScanLog("transfer", userId);
+  const feedback = useScanFeedback();
   const [asset, setAsset] = useState<Asset | null>(null);
   const [error, setError] = useState<{ code: string; message: string; details?: any } | null>(null);
   const [receipt, setReceipt] = useState<Asset | null>(null);
@@ -36,6 +38,7 @@ export default function TechTransferPage(): React.ReactElement {
     try {
       const a = await api.assets.get(tag);
       if (a.state === "disposed" || a.state === "unreceived") {
+        feedback.error();
         setError({ code: "invalid_transition", message: "Cannot transfer", details: { from_state: a.state } });
         log.add({ kind: "error", asset_tag: tag, summary: a.state });
         return;
@@ -43,6 +46,7 @@ export default function TechTransferPage(): React.ReactElement {
       setAsset(a);
     } catch (e) {
       if (e instanceof ApiError) {
+        feedback.error();
         setError({ code: e.code, message: e.message, details: e.details });
         log.add({ kind: "error", asset_tag: tag, summary: e.code });
       }
@@ -66,6 +70,7 @@ export default function TechTransferPage(): React.ReactElement {
       });
       const json = await res.json();
       if (!res.ok) {
+        feedback.error();
         setError({ code: json.error?.code ?? "unknown_error", message: json.error?.message ?? "Unknown error", details: json.error?.details });
         log.add({ kind: "error", asset_tag: asset.asset_tag, summary: json.error?.code ?? "error" });
         setAsset(null);
@@ -73,6 +78,7 @@ export default function TechTransferPage(): React.ReactElement {
       }
       const updated = json as Asset;
       setReceipt(updated);
+      feedback.success();
       log.add({ kind: "success", asset_tag: asset.asset_tag, summary: `${asset.custodian} → ${updated.custodian}` });
       setAsset(null);
     } finally {
