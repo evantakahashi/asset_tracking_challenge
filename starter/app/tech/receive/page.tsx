@@ -28,10 +28,10 @@ const MODELS: { manufacturer: string; model: string; asset_class: AssetClass }[]
 ];
 
 const ERROR_MESSAGES = {
-  invalid_tag_format: "Tag format invalid. Expected C followed by 7 digits (e.g. C0009001).",
+  invalid_tag_format: "That tag doesn't look right. Cerebras tags are 'C' followed by exactly 7 digits (e.g. C0009001) — check the sticker.",
   and_match_failed: (d?: any) =>
-    `This tag is already on file with a different serial. On file: ${d?.expected_serial}. You scanned: ${d?.provided_serial}.`,
-  unknown_asset: "No record of that tag. Check the tag, or use Receive for a new arrival.",
+    `Stop — this tag is already on file with a different serial. On file: ${d?.expected_serial}. You just scanned: ${d?.provided_serial}. Figure out which is the real one before continuing.`,
+  unknown_asset: "No record of that tag yet — looks like a new arrival.",
 } as const;
 
 export default function TechReceivePage(): React.ReactElement {

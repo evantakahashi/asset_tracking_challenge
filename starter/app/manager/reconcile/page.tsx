@@ -35,7 +35,8 @@ export default async function ManagerReconcilePage(): Promise<React.ReactElement
 
       {total === 0 ? (
         <div className="bg-neutral-50 border border-neutral-200 rounded-md p-6 text-center text-sm text-neutral-600">
-          All assets agree on every detail today. <span className="text-neutral-500">This is suspicious — when did you last reset?</span>
+          All {report.counts.expected.toLocaleString()} tracked assets agree on every detail today.{" "}
+          <span className="text-neutral-500">Either nothing has moved since the last sync, or something stopped writing scans — worth checking with the dock team.</span>
         </div>
       ) : null}
 

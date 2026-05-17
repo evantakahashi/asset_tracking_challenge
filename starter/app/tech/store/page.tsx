@@ -14,10 +14,17 @@ import { formatLocationShort } from "@/lib/format";
 import type { Asset } from "@/lib/types";
 
 const ERROR_MESSAGES = {
-  invalid_transition: (d?: any) =>
-    `Can't store from ${d?.from_state}. ${d?.from_state === "stored" ? "Already stored." : d?.from_state === "disposed" ? "This asset is disposed." : "Try /tech/transfer or check the asset's current state."}`,
-  unknown_asset: "No record of that tag. Use /tech/receive for new arrivals.",
-  invalid_location: "Location is unparseable. Expected slash-delimited format.",
+  invalid_transition: (d?: any) => {
+    switch (d?.from_state) {
+      case "stored":      return "This asset is already in storage — nothing to do.";
+      case "disposed":    return "This asset was disposed. You probably grabbed the wrong tag — try a fresh one.";
+      case "rma_pending": return "This asset is in RMA staging. It can't be moved to storage until it comes back from the vendor.";
+      case "unreceived":  return "This tag has never been received. Use /tech/receive first.";
+      default:            return `Can't store an asset that's in '${d?.from_state}' state.`;
+    }
+  },
+  unknown_asset: "No record of that tag in operations. Use /tech/receive if this is a new arrival; otherwise double-check the tag.",
+  invalid_location: "The storage location didn't parse. Format: site / room / shelf (slash-delimited).",
 } as const;
 
 export default function TechStorePage(): React.ReactElement {

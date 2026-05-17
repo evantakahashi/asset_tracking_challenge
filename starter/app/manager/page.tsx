@@ -43,6 +43,17 @@ function fourteenDaysAgo(): Date {
   return new Date(Date.now() - 14 * 86400_000);
 }
 
+function emptyMessage(params: Record<string, string | undefined>): string {
+  const state = params.state && params.state !== "all" ? params.state.replace("_", " ") : null;
+  const site = params.site && params.site !== "all" ? params.site : null;
+  const q = params.q?.trim();
+  if (q) return `Nothing matches "${q}"${state ? ` in ${state} assets` : ""}${site ? ` at ${site}` : ""}. Clear the search or widen the state filter.`;
+  if (state && site) return `No ${state} assets at ${site}. Either nothing's been ${state} there lately, or the filter is too narrow.`;
+  if (state) return `No assets are currently in '${state}' state. Try a different filter or check whether the system is healthy.`;
+  if (site) return `No assets found at ${site}. Either the site is empty or the data hasn't synced yet.`;
+  return "No assets match these filters. Clear them to see everything.";
+}
+
 export default async function ManagerPage({
   searchParams,
 }: {
@@ -94,7 +105,7 @@ export default async function ManagerPage({
             {visible.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-3 py-8 text-center text-sm text-neutral-500">
-                  No assets match these filters. Try widening the state or clearing the search.
+                  {emptyMessage(params)}
                 </td>
               </tr>
             ) : (

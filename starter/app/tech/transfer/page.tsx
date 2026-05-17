@@ -12,9 +12,14 @@ import { getCurrentUserId } from "@/lib/auth";
 import type { Asset } from "@/lib/types";
 
 const ERROR_MESSAGES = {
-  invalid_transition: (d?: any) => `Can't transfer this asset — it's ${d?.from_state}.`,
-  same_custodian: (d?: any) => `This asset already belongs to ${d?.custodian}.`,
-  unknown_asset: "No record of that tag.",
+  invalid_transition: (d?: any) =>
+    d?.from_state === "disposed"
+      ? "This asset was disposed — there's nothing left to transfer."
+      : d?.from_state === "unreceived"
+      ? "This tag has never been received. Use /tech/receive first."
+      : `Custody transfers don't apply to assets in '${d?.from_state}' state.`,
+  same_custodian: (d?: any) => `This asset already belongs to ${d?.custodian}. Did you scan the wrong badge?`,
+  unknown_asset: "No record of that tag in operations. If this is a new arrival, use /tech/receive.",
 } as const;
 
 export default function TechTransferPage(): React.ReactElement {

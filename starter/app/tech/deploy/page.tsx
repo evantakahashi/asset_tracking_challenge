@@ -14,9 +14,17 @@ import { formatLocationShort } from "@/lib/format";
 import type { Asset } from "@/lib/types";
 
 const ERROR_MESSAGES = {
-  invalid_transition: (d?: any) => `Can't deploy from ${d?.from_state}. Deploy only works from received or stored.`,
-  incomplete_deploy_location: "Deploy needs a rack and RU. The scanned location is missing one of those.",
-  unknown_asset: "No record of that tag. Use /tech/receive for new arrivals.",
+  invalid_transition: (d?: any) => {
+    switch (d?.from_state) {
+      case "in_service":  return "This asset is already deployed somewhere. To move it, store it first, then deploy again.";
+      case "rma_pending": return "This asset is in RMA staging. Wait for it to come back before deploying.";
+      case "disposed":    return "This asset was disposed. Use a fresh tag.";
+      case "unreceived":  return "This tag has never been received. Use /tech/receive first.";
+      default:            return `Can't deploy from '${d?.from_state}'. Deploy works from received or stored.`;
+    }
+  },
+  incomplete_deploy_location: "A rack location needs both a rack ID and a slot (RU). Scanned location is missing one of those — double-check the barcode.",
+  unknown_asset: "No record of that tag in operations. Use /tech/receive if this is a new arrival.",
 } as const;
 
 export default function TechDeployPage(): React.ReactElement {
