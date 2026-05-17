@@ -137,8 +137,30 @@ export default function TechReceivePage(): React.ReactElement {
       {mode === "new" ? (
         <div className="bg-white border border-neutral-200 rounded-md p-4 space-y-3">
           <div className="text-xs uppercase tracking-wider text-neutral-500">New asset · {pendingTag}</div>
+
+          <div>
+            <div className="text-xs text-neutral-500 mb-2">Model — tap a common one, or pick from the list below</div>
+            <div className="grid grid-cols-2 gap-2">
+              {MODELS.slice(0, 6).map((m, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setModelIdx(i)}
+                  className={`text-left p-2 rounded border text-xs leading-tight transition ${
+                    modelIdx === i
+                      ? "border-neutral-900 bg-neutral-900 text-white"
+                      : "border-neutral-200 bg-neutral-50 hover:border-neutral-400"
+                  }`}
+                >
+                  <div className="font-medium">{m.model}</div>
+                  <div className={modelIdx === i ? "text-neutral-300" : "text-neutral-500"}>{m.manufacturer}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <label className="block text-sm">
-            <span className="block text-xs text-neutral-500 mb-1">Model</span>
+            <span className="block text-xs text-neutral-500 mb-1">Or pick a less common one</span>
             <select
               value={modelIdx}
               onChange={(e) => setModelIdx(Number(e.target.value))}
