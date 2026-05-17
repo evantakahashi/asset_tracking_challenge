@@ -55,6 +55,16 @@ Next.js App Router. Server components for the read-only manager pages (list, det
 | Dark mode | Tech-at-11pm framing would justify it. Cost vs. polish elsewhere — picked elsewhere. Flagged as one of the "three calls" alternatives. |
 | Print stylesheet for `/manager/reconcile` | Tempting (a manager prints the punch list to bring to standup); not worth the time. |
 
+## What we don't prevent (per CONTEXT.md)
+
+CONTEXT.md asks: *"if your design would prevent layering them on later, flag it in your README."* Three named extensions; none are blocked by our design.
+
+1. **Parent-child relationships.** The API already carries `parent_asset_tag` on every Asset. We don't render it. Layering in: a "Parent" line on `/manager/assets/[tag]` and a "Children (N)" section listing assets whose `parent_asset_tag` equals the current tag. Estimated effort: <1 hour.
+
+2. **Offline scan queueing.** Our scan flow synchronously POSTs through `/api/scans/*`. To layer in offline queueing, add a service worker that intercepts those routes when `!navigator.onLine`, queues into IndexedDB, and replays on the `online` event. The `useScanLog` hook already records every attempt with status — the queue is additive. Estimated: 3–4 hours.
+
+3. **Tag-as-asset.** Tags are strings in our data model. Treating physical stickers as assets with their own lifecycle (vendor, batch, printed-on, applied-to) would add a `tags` resource on the API with its own state machine. Schema change required, but our UI doesn't *prevent* this — it just doesn't care about tags-as-entities today. Estimated: half a day for a working pass.
+
 ## Pushback on the brief / starter
 
 A few things I noticed while building. These aren't blockers — they're observations a contractor would flag back to the team that owns the starter.
