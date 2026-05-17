@@ -40,6 +40,28 @@ function opsRackKey(o: Asset): string | null {
   return `${o.location.rack}/${o.location.ru}`;
 }
 
+// Best-guess "how old is this drift" — used for the 'first seen' line on each
+// card. Falls back across the three sources in order of how directly each
+// reflects the drift's onset.
+function ageDays(
+  now: Date,
+  ops: Asset | null,
+  facilities: FacilitiesRecord | null,
+  finance: FinanceRecord | null,
+): number | null {
+  const fromIso = (iso: string | null | undefined): number | null => {
+    if (!iso) return null;
+    const d = daysBetween(now, new Date(iso));
+    return Number.isFinite(d) ? Math.floor(d) : null;
+  };
+  return (
+    fromIso(ops?.updated_at) ??
+    fromIso(facilities?.last_observed) ??
+    fromIso(finance?.capitalized_on) ??
+    null
+  );
+}
+
 export function classifyDrift(
   ops: Asset | null,
   facilities: FacilitiesRecord | null,
@@ -50,6 +72,8 @@ export function classifyDrift(
   if (!tag) return null;
 
   // === Tier 1 — most operationally urgent, checked first ===
+
+  const age = ageDays(now, ops, facilities, finance);
 
   if (!ops && facilities) {
     return {
@@ -62,6 +86,7 @@ export function classifyDrift(
         finance: finance ? finView(finance) : null,
       },
       action: "Physical audit at this rack — barcode the instrument or remove the facilities row.",
+      age_days: age,
     };
   }
 
@@ -76,6 +101,7 @@ export function classifyDrift(
         finance: finance ? finView(finance) : null,
       },
       action: "Delete the facilities row — this asset isn't physically racked.",
+      age_days: age,
     };
   }
 
@@ -93,6 +119,7 @@ export function classifyDrift(
           finance: finance ? finView(finance) : null,
         },
         action: "Walk the rack and re-scan; whichever system disagrees with the physical reality gets corrected.",
+        age_days: age,
       };
     }
   }
@@ -106,6 +133,7 @@ export function classifyDrift(
       asset_tag: tag,
       views: { ops: null, facilities: facilities ? facView(facilities) : null, finance: finView(finance) },
       action: "Check with procurement whether this asset was actually received; if not, write off the PO line.",
+      age_days: age,
     };
   }
 
@@ -116,6 +144,7 @@ export function classifyDrift(
       asset_tag: tag,
       views: { ops: opsView(ops), facilities: facilities ? facView(facilities) : null, finance: null },
       action: "Ping procurement to close the PO.",
+      age_days: age,
     };
   }
 
@@ -130,6 +159,7 @@ export function classifyDrift(
         views: { ops: opsView(ops), facilities: null, finance: finView(finance) },
         action: `Notify finance to retire this asset — disposal happened ${Math.floor(days)} days ago.`,
         context: `Disposed ${Math.floor(days)} days ago`,
+        age_days: Math.floor(days),
       };
     }
   }
@@ -147,6 +177,7 @@ export function classifyDrift(
         views: { ops: opsView(ops), facilities: facView(facilities), finance: finance ? finView(finance) : null },
         action: "Schedule a rack re-scan — facilities hasn't observed this asset in a while.",
         context: `Last seen ${Math.floor(days)} days ago`,
+        age_days: Math.floor(days),
       };
     }
   }

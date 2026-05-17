@@ -30,9 +30,20 @@ export function DriftCard({ card }: { card: DriftCardType }): React.ReactElement
           <span className="font-semibold">Action:</span> {card.action}
         </div>
         {showContext ? <div className="text-[10px] text-neutral-500 mt-1">{card.context}</div> : null}
+        {typeof card.age_days === "number" && card.category !== "stale_rack_obs" && card.category !== "disposed_but_capitalized" ? (
+          <div className="text-[10px] text-neutral-400 mt-1">{ageLabel(card.age_days)}</div>
+        ) : null}
       </div>
     </div>
   );
+}
+
+function ageLabel(days: number): string {
+  if (days < 1) return "First seen today";
+  if (days === 1) return "First seen yesterday";
+  if (days < 14) return `First seen ${days} days ago`;
+  if (days < 60) return `First seen ${Math.floor(days / 7)} weeks ago`;
+  return `First seen ${Math.floor(days / 30)} months ago`;
 }
 
 function View({ label, view }: { label: string; view: { display: string } | null }): React.ReactElement {
