@@ -9,6 +9,7 @@ import { ApiErrorBanner } from "@/components/ApiErrorBanner";
 import { api, ApiError } from "@/lib/api-client";
 import { useScanLog } from "@/lib/scan-log/use-scan-log";
 import { useScanFeedback } from "@/lib/scan-feedback/use-scan-feedback";
+import { CameraButton } from "@/components/scan/CameraButton";
 import { getCurrentUserId } from "@/lib/auth";
 import { parseLocation } from "@/lib/location";
 import type { Asset, AssetClass } from "@/lib/types";
@@ -181,12 +182,15 @@ export default function TechReceivePage(): React.ReactElement {
           </label>
           <label className="block text-sm">
             <span className="block text-xs text-neutral-500 mb-1">Serial (from vendor sticker)</span>
-            <input
-              value={serial}
-              onChange={(e) => setSerial(e.target.value)}
-              placeholder="SN-VENDOR-..."
-              className="w-full p-2 rounded border border-neutral-300 bg-neutral-50 font-mono text-sm"
-            />
+            <div className="flex gap-2">
+              <input
+                value={serial}
+                onChange={(e) => setSerial(e.target.value)}
+                placeholder="SN-VENDOR-..."
+                className="flex-1 p-2 rounded border border-neutral-300 bg-neutral-50 font-mono text-sm"
+              />
+              <CameraButton onDecoded={(v) => setSerial(v)} ariaLabel="scan vendor serial" />
+            </div>
           </label>
           <label className="block text-sm">
             <span className="block text-xs text-neutral-500 mb-1">Dock location</span>
