@@ -28,4 +28,18 @@ describe("<ScanInput>", () => {
     fireEvent.keyDown(input, { key: "Enter" });
     expect(input.value).toBe("");
   });
+
+  it("renders camera button when mediaDevices is available", () => {
+    Object.defineProperty(window.navigator, "mediaDevices", { value: {}, configurable: true });
+    const onScan = vi.fn();
+    render(<ScanInput onScan={onScan} />);
+    expect(screen.getByLabelText(/use camera/i)).toBeInTheDocument();
+  });
+
+  it("hides camera button when mediaDevices is unavailable", () => {
+    Object.defineProperty(window.navigator, "mediaDevices", { value: undefined, configurable: true });
+    const onScan = vi.fn();
+    render(<ScanInput onScan={onScan} />);
+    expect(screen.queryByLabelText(/use camera/i)).not.toBeInTheDocument();
+  });
 });
