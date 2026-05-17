@@ -1,10 +1,6 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
-
-const CameraScanner = dynamic(() => import("./scan/CameraScanner").then((m) => m.CameraScanner), {
-  ssr: false,
-});
+import { useEffect, useRef } from "react";
+import { CameraButton } from "./scan/CameraButton";
 
 export interface ScanInputProps {
   onScan: (value: string) => void;
@@ -12,10 +8,6 @@ export interface ScanInputProps {
   autoFocus?: boolean;
   disabled?: boolean;
   label?: string;
-}
-
-function hasCamera(): boolean {
-  return typeof navigator !== "undefined" && !!navigator.mediaDevices;
 }
 
 export function ScanInput({
@@ -26,12 +18,6 @@ export function ScanInput({
   label,
 }: ScanInputProps): React.ReactElement {
   const ref = useRef<HTMLInputElement>(null);
-  const [cameraOpen, setCameraOpen] = useState(false);
-  const [cameraAvailable, setCameraAvailable] = useState(false);
-
-  useEffect(() => {
-    setCameraAvailable(hasCamera());
-  }, []);
 
   useEffect(() => {
     if (autoFocus && ref.current && !disabled) ref.current.focus();
@@ -48,7 +34,6 @@ export function ScanInput({
   }
 
   function handleDecoded(v: string): void {
-    setCameraOpen(false);
     const el = ref.current;
     if (el) {
       el.value = v;
@@ -79,19 +64,8 @@ export function ScanInput({
             }
           }}
         />
-        {cameraAvailable ? (
-          <button
-            type="button"
-            aria-label="use camera"
-            onClick={() => setCameraOpen(true)}
-            disabled={disabled}
-            className="px-3 min-h-[44px] rounded-md border border-neutral-300 hover:bg-neutral-50 text-sm"
-          >
-            📷
-          </button>
-        ) : null}
+        <CameraButton onDecoded={handleDecoded} disabled={disabled} />
       </div>
-      {cameraOpen ? <CameraScanner onDecoded={handleDecoded} onClose={() => setCameraOpen(false)} /> : null}
     </label>
   );
 }
