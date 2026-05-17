@@ -1,15 +1,15 @@
 "use client";
 import { useState } from "react";
-import { formatSlackPunchList } from "@/lib/reconcile/format-slack";
+import { formatStandupPunchList } from "@/lib/reconcile/format-standup";
 import type { ReconcileReport } from "@/lib/reconcile/types";
 
-export function CopyForSlackButton({ report }: { report: ReconcileReport }): React.ReactElement {
+export function CopyForStandupButton({ report }: { report: ReconcileReport }): React.ReactElement {
   const [copied, setCopied] = useState(false);
   const total = report.counts.today + report.counts.this_week + report.counts.watch;
   const disabled = total === 0;
 
   async function copy(): Promise<void> {
-    const text = formatSlackPunchList(report, new Date());
+    const text = formatStandupPunchList(report, new Date());
     try {
       await navigator.clipboard.writeText(text);
     } catch {
@@ -38,7 +38,7 @@ export function CopyForSlackButton({ report }: { report: ReconcileReport }): Rea
       disabled={disabled}
       className="text-xs px-2.5 py-1 rounded-md border border-neutral-300 bg-white hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      {copied ? `✓ Copied · ${total} item${total === 1 ? "" : "s"}` : "📋 Copy for Slack"}
+      {copied ? `✓ Copied · ${total} item${total === 1 ? "" : "s"}` : "📋 Copy for standup"}
     </button>
   );
 }

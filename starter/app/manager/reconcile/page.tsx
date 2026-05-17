@@ -1,6 +1,6 @@
 import { DriftCard } from "./_components/DriftCard";
 import { LastVisitBand } from "./_components/LastVisitBand";
-import { CopyForSlackButton } from "./_components/CopyForSlackButton";
+import { CopyForStandupButton } from "./_components/CopyForStandupButton";
 import { TrendWidget } from "./_components/TrendWidget";
 import { PrintLayout } from "./_components/PrintLayout";
 import { PrintButton } from "./_components/PrintButton";
@@ -46,7 +46,7 @@ export default async function ManagerReconcilePage(): Promise<React.ReactElement
             <p className="text-xs text-neutral-500 font-mono">Generated {new Date(report.generated_at).toLocaleString()}</p>
             <div className="flex items-center gap-2">
               <PrintButton />
-              <CopyForSlackButton report={report} />
+              <CopyForStandupButton report={report} />
             </div>
           </div>
         </header>

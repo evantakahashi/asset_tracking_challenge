@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatSlackPunchList } from "./format-slack";
+import { formatStandupPunchList } from "./format-standup";
 import type { DriftCard, ReconcileReport } from "./types";
 
 const NOW = new Date("2026-05-17T08:54:00Z");
@@ -24,9 +24,9 @@ function card(over: Partial<DriftCard>): DriftCard {
   };
 }
 
-describe("formatSlackPunchList", () => {
+describe("formatStandupPunchList", () => {
   it("returns an empty-but-honest one-liner when nothing's drifting", () => {
-    const out = formatSlackPunchList(emptyReport(), NOW);
+    const out = formatStandupPunchList(emptyReport(), NOW);
     expect(out).toMatch(/all tracked assets agree today/i);
     expect(out).not.toContain("Investigate today");
   });
@@ -35,7 +35,7 @@ describe("formatSlackPunchList", () => {
     const r = emptyReport();
     r.tiers.today = [card({})];
     r.counts.today = 1;
-    const out = formatSlackPunchList(r, NOW);
+    const out = formatStandupPunchList(r, NOW);
     expect(out).toContain("*Investigate today (1):*");
     expect(out).not.toContain("Investigate this week");
     expect(out).not.toContain("Worth knowing");
@@ -47,7 +47,7 @@ describe("formatSlackPunchList", () => {
     r.tiers.this_week = [card({ category: "off_books", tier: "this_week", asset_tag: "C0000002", views: { ops: { display: "received" }, facilities: null, finance: null } })];
     r.tiers.watch = [card({ category: "stale_rack_obs", tier: "watch", asset_tag: "C0000003", context: "Last seen 195 days ago" })];
     r.counts = { today: 1, this_week: 1, watch: 1, expected: 0 };
-    const out = formatSlackPunchList(r, NOW);
+    const out = formatStandupPunchList(r, NOW);
     const todayIdx = out.indexOf("*Investigate today");
     const weekIdx = out.indexOf("*Investigate this week");
     const watchIdx = out.indexOf("*Worth knowing");
@@ -60,7 +60,7 @@ describe("formatSlackPunchList", () => {
     const r = emptyReport();
     r.tiers.today = [card({})];
     r.counts.today = 1;
-    const out = formatSlackPunchList(r, NOW);
+    const out = formatStandupPunchList(r, NOW);
     expect(out).toContain("`C0000001`");
     expect(out).toContain("[MIS]");
   });
@@ -69,7 +69,7 @@ describe("formatSlackPunchList", () => {
     const r = emptyReport();
     r.tiers.today = [card({}), card({ asset_tag: "C0000002" })];
     r.counts.today = 2;
-    const out = formatSlackPunchList(r, NOW);
+    const out = formatStandupPunchList(r, NOW);
     expect(out).not.toMatch(/[ \t]+\n/);
     expect(out).not.toMatch(/\n\n\n/);
   });

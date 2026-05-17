@@ -52,7 +52,7 @@ function dateHeader(now: Date): string {
   return now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 }
 
-export function formatSlackPunchList(report: ReconcileReport, now: Date): string {
+export function formatStandupPunchList(report: ReconcileReport, now: Date): string {
   const total = report.counts.today + report.counts.this_week + report.counts.watch;
   if (total === 0) {
     return `*Reconciliation — ${dateHeader(now)}*\nAll tracked assets agree today.`;
