@@ -1,4 +1,5 @@
 import { DriftCard } from "./_components/DriftCard";
+import { LastVisitBand } from "./_components/LastVisitBand";
 import type { ReconcileReport } from "@/lib/reconcile/types";
 
 async function fetchReport(): Promise<ReconcileReport | { error: string }> {
@@ -19,6 +20,11 @@ export default async function ManagerReconcilePage(): Promise<React.ReactElement
   }
 
   const total = report.counts.today + report.counts.this_week + report.counts.watch;
+  const currentKeys = [
+    ...report.tiers.today,
+    ...report.tiers.this_week,
+    ...report.tiers.watch,
+  ].map((c) => ({ tag: c.asset_tag, category: c.category }));
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -32,6 +38,8 @@ export default async function ManagerReconcilePage(): Promise<React.ReactElement
         </p>
         <p className="text-xs text-neutral-500 mt-0.5 font-mono">Generated {new Date(report.generated_at).toLocaleString()}</p>
       </header>
+
+      <LastVisitBand current={currentKeys} />
 
       {total === 0 ? (
         <div className="bg-neutral-50 border border-neutral-200 rounded-md p-6 text-center text-sm text-neutral-600">
