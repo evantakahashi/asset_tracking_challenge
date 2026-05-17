@@ -4,8 +4,9 @@ import { StatePill } from "@/components/StatePill";
 import { MorningBands } from "./_components/MorningBands";
 import { ManagerFilters } from "./_components/ManagerFilters";
 import { relativeTime } from "@/lib/format";
+import { staticLabelFor } from "@/lib/reconcile/labels";
 import type { Asset } from "@/lib/types";
-import type { ReconcileReport } from "@/lib/reconcile/types";
+import type { DriftCard, ReconcileReport } from "@/lib/reconcile/types";
 
 const PAGE_SIZE = 50;
 
@@ -53,6 +54,14 @@ export default async function ManagerPage({
   const longStored = assets.filter((a) => a.state === "stored" && new Date(a.updated_at) < thirtyDaysAgo()).length;
   const oldRma = assets.filter((a) => a.state === "rma_pending" && new Date(a.updated_at) < fourteenDaysAgo()).length;
 
+  // Build a tag → drift-card map so each row can show a dot if it has a problem somewhere else.
+  const driftByTag = new Map<string, DriftCard>();
+  if (report) {
+    for (const tier of [report.tiers.today, report.tiers.this_week, report.tiers.watch]) {
+      for (const card of tier) driftByTag.set(card.asset_tag, card);
+    }
+  }
+
   const filtered = filterAssets(assets, params.state, params.site, params.q);
   const page = Number(params.page ?? "1");
   const visible = filtered.slice(0, page * PAGE_SIZE);
@@ -89,15 +98,35 @@ export default async function ManagerPage({
                 </td>
               </tr>
             ) : (
-              visible.map((a) => (
-                <tr key={a.asset_tag} className="border-b border-neutral-100 hover:bg-neutral-50">
-                  <td className="px-3 py-2"><Tag value={a.asset_tag} href={`/manager/assets/${a.asset_tag}`} /></td>
-                  <td className="px-3 py-2"><StatePill state={a.state} /></td>
-                  <td className="px-3 py-2 text-neutral-700">{a.location.site}</td>
-                  <td className="px-3 py-2 text-neutral-700 font-mono text-xs">{a.custodian}</td>
-                  <td className="px-3 py-2 text-neutral-500 text-xs">{relativeTime(a.updated_at)}</td>
-                </tr>
-              ))
+              visible.map((a) => {
+                const drift = driftByTag.get(a.asset_tag);
+                const dotColor =
+                  drift?.tier === "today" ? "bg-red-500" :
+                  drift?.tier === "this_week" ? "bg-amber-500" :
+                  drift?.tier === "watch" ? "bg-neutral-400" : "";
+                return (
+                  <tr key={a.asset_tag} className="border-b border-neutral-100 hover:bg-neutral-50">
+                    <td className="px-3 py-2">
+                      <span className="inline-flex items-center gap-2">
+                        {drift ? (
+                          <span
+                            className={`inline-block w-1.5 h-1.5 rounded-full ${dotColor}`}
+                            aria-label={`drift: ${staticLabelFor(drift.category)}`}
+                            title={staticLabelFor(drift.category)}
+                          />
+                        ) : (
+                          <span className="inline-block w-1.5 h-1.5" />
+                        )}
+                        <Tag value={a.asset_tag} href={`/manager/assets/${a.asset_tag}`} />
+                      </span>
+                    </td>
+                    <td className="px-3 py-2"><StatePill state={a.state} /></td>
+                    <td className="px-3 py-2 text-neutral-700">{a.location.site}</td>
+                    <td className="px-3 py-2 text-neutral-700 font-mono text-xs">{a.custodian}</td>
+                    <td className="px-3 py-2 text-neutral-500 text-xs">{relativeTime(a.updated_at)}</td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
