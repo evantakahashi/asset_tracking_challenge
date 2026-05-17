@@ -15,3 +15,6 @@ coverage/
 api/data/
 !api/data/.gitkeep
 *.tsbuildinfo
+
+# Superpowers brainstorming companion
+.superpowers/
