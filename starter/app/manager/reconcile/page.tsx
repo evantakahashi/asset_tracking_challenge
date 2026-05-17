@@ -1,6 +1,7 @@
 import { DriftCard } from "./_components/DriftCard";
 import { LastVisitBand } from "./_components/LastVisitBand";
 import { CopyForSlackButton } from "./_components/CopyForSlackButton";
+import { TrendWidget } from "./_components/TrendWidget";
 import type { ReconcileReport } from "@/lib/reconcile/types";
 
 async function fetchReport(): Promise<ReconcileReport | { error: string }> {
@@ -43,6 +44,7 @@ export default async function ManagerReconcilePage(): Promise<React.ReactElement
         </div>
       </header>
 
+      <TrendWidget report={report} />
       <LastVisitBand current={currentKeys} />
 
       {total === 0 ? (
