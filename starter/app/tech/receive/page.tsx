@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PageHeader } from "@/components/PageHeader";
 import { ScanInput } from "@/components/ScanInput";
 import { AssetCard } from "@/components/scan/AssetCard";
 import { ScanReceipt } from "@/components/scan/ScanReceipt";
@@ -129,11 +130,12 @@ export default function TechReceivePage(): React.ReactElement {
 
   return (
     <div className="space-y-6 max-w-xl">
-      <header>
-        <div className="text-[10px] uppercase tracking-wider text-neutral-500">/ tech / receive</div>
-        <h1 className="text-2xl font-semibold mt-1">Receive</h1>
-        <p className="text-sm text-neutral-600 mt-1">Scan a tag. We&apos;ll figure out new vs. duplicate.</p>
-      </header>
+      <PageHeader
+        crumb="/ tech / receive"
+        title="Receive"
+        titleVariant="editorial"
+        subtitle="Scan a tag. We'll figure out new vs. duplicate."
+      />
 
       <ScanInput onScan={onTagScan} label="Asset tag" placeholder="Scan or type a tag" disabled={busy} />
 

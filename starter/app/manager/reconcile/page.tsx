@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/PageHeader";
 import { DriftCard } from "./_components/DriftCard";
 import { LastVisitBand } from "./_components/LastVisitBand";
 import { CopyForStandupButton } from "./_components/CopyForStandupButton";
@@ -35,16 +36,17 @@ export default async function ManagerReconcilePage(): Promise<React.ReactElement
     <>
       <PrintLayout report={report} />
       <div className="space-y-6 max-w-3xl print:hidden">
-        <header>
-          <div className="text-[10px] uppercase tracking-wider text-neutral-500">/ manager / reconcile</div>
-          <h1 className="text-2xl font-semibold mt-1">Reconciliation</h1>
-          <p className="text-sm text-neutral-600 mt-1">
-            {report.counts.today} today · {report.counts.this_week} this week · {report.counts.watch} to watch
-            {" · "}
-            <span className="text-neutral-500">{report.counts.expected.toLocaleString()} expected (collapsed)</span>
-          </p>
-          <p className="text-xs text-neutral-500 font-mono mt-0.5">Generated {new Date(report.generated_at).toLocaleString()}</p>
-        </header>
+        <PageHeader
+          crumb="/ manager / reconcile"
+          title="Reconciliation"
+          subtitle={
+            <>
+              {report.counts.today} today · {report.counts.this_week} this week · {report.counts.watch} to watch · {" "}
+              <span className="text-neutral-500">{report.counts.expected.toLocaleString()} expected (collapsed)</span>
+            </>
+          }
+        />
+        <p className="text-xs text-neutral-500 font-mono mt-0.5">Generated {new Date(report.generated_at).toLocaleString()}</p>
 
         <ReconcileStickyBar report={report} />
         <TrendWidget report={report} />

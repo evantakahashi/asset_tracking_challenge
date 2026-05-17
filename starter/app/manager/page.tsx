@@ -1,4 +1,5 @@
 import { api } from "@/lib/api-client";
+import { PageHeader } from "@/components/PageHeader";
 import { Tag } from "@/components/Tag";
 import { StatePill } from "@/components/StatePill";
 import { MorningBands } from "./_components/MorningBands";
@@ -104,14 +105,11 @@ export default async function ManagerPage({
 
   return (
     <div className="space-y-8">
-      <header>
-        <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-neutral-500 mb-2">
-          / manager · {nowHeader()}
-        </div>
-        <h1 className="font-serif italic text-[28px] leading-tight tracking-tight text-neutral-900 max-w-2xl">
-          {leadSentence(report)}
-        </h1>
-      </header>
+      <PageHeader
+        crumb={`/ manager · ${nowHeader()}`}
+        title={leadSentence(report)}
+        titleVariant="editorial"
+      />
 
       {report ? <MorningBands report={report} longStored={longStored} oldRma={oldRma} /> : null}
 

@@ -1,7 +1,7 @@
 import Link from "next/link";
+import { PageHeader } from "@/components/PageHeader";
 import { notFound } from "next/navigation";
 import { api, ApiError } from "@/lib/api-client";
-import { Tag } from "@/components/Tag";
 import { StatePill } from "@/components/StatePill";
 import { EventTimeline } from "./_components/EventTimeline";
 import { relativeTime } from "@/lib/format";
@@ -40,13 +40,16 @@ export default async function ManagerAssetDetailPage({
         <Link href="/manager" className="text-xs text-neutral-500 hover:text-neutral-700">← Assets</Link>
       </div>
 
-      <header className="bg-white border border-neutral-200 rounded-md p-5">
+      <PageHeader
+        crumb={`/ manager / assets / ${asset.asset_tag}`}
+        title={<span className="font-mono">{asset.asset_tag}</span>}
+        subtitle={`${asset.model} · ${asset.serial}`}
+      />
+
+      <div className="bg-white border border-neutral-200 rounded-md p-5">
         <div className="flex items-baseline justify-between">
-          <Tag value={asset.asset_tag} className="text-xl" />
           <StatePill state={asset.state} />
         </div>
-        <div className="mt-1 text-base text-neutral-800">{asset.model}</div>
-        <div className="text-xs text-neutral-500 font-mono">{asset.serial} · {asset.manufacturer}</div>
         <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
           <div className="text-neutral-500 text-xs uppercase tracking-wider">Location</div>
           <div className="font-mono text-xs">{serializeLocation(asset.location)}</div>
@@ -55,7 +58,7 @@ export default async function ManagerAssetDetailPage({
           <div className="text-neutral-500 text-xs uppercase tracking-wider">Updated</div>
           <div className="text-xs">{relativeTime(asset.updated_at)} · <span className="text-neutral-500">{asset.updated_at}</span></div>
         </div>
-      </header>
+      </div>
 
       <section className="grid grid-cols-3 gap-3">
         <div className="bg-white border border-neutral-200 rounded-md p-3">

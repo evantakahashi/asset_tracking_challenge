@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
+import { PageHeader } from "@/components/PageHeader";
 import bwipjs from "bwip-js";
 
 const ASSET_TAGS = [
@@ -51,15 +52,17 @@ function Barcode({ value }: { value: string }): React.ReactElement {
 export default function BarcodesPage(): React.ReactElement {
   return (
     <div className="space-y-8 max-w-4xl print:max-w-none">
-      <header className="print:hidden">
-        <h1 className="text-2xl font-semibold">Demo barcodes</h1>
-        <p className="text-sm text-neutral-600 mt-1">
-          Print this page or scan directly from the screen. Code 128 throughout — works with handheld scanners and phone cameras via the in-app scanner.
-        </p>
+      <div className="print:hidden">
+        <PageHeader
+          crumb="/ dev / barcodes"
+          title="Demo barcodes"
+          titleVariant="editorial"
+          subtitle="Print this page or scan directly from the screen. Code 128 throughout — works with handheld scanners and phone cameras via the in-app scanner."
+        />
         <button onClick={() => window.print()} className="mt-3 px-4 py-1.5 text-sm rounded-md border border-neutral-300 bg-white hover:bg-neutral-50">
           Print
         </button>
-      </header>
+      </div>
 
       <section>
         <h2 className="text-sm font-semibold mb-3">Assets</h2>
