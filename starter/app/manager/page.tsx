@@ -1,26 +1,114 @@
-import Link from "next/link";
+import { api } from "@/lib/api-client";
+import { Tag } from "@/components/Tag";
+import { StatePill } from "@/components/StatePill";
+import { MorningBands } from "./_components/MorningBands";
+import { ManagerFilters } from "./_components/ManagerFilters";
+import { relativeTime } from "@/lib/format";
+import type { Asset } from "@/lib/types";
+import type { ReconcileReport } from "@/lib/reconcile/types";
 
-export default function ManagerLandingPage() {
+const PAGE_SIZE = 50;
+
+async function fetchReport(): Promise<ReconcileReport | null> {
+  try {
+    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000";
+    const res = await fetch(`${baseUrl}/api/reconcile`, { cache: "no-store" });
+    if (!res.ok) return null;
+    return (await res.json()) as ReconcileReport;
+  } catch {
+    return null;
+  }
+}
+
+function filterAssets(all: Asset[], state: string | undefined, site: string | undefined, q: string | undefined): Asset[] {
+  const stateF = state && state !== "all" ? state : null;
+  const siteF = site && site !== "all" ? site : null;
+  const qF = q?.toLowerCase().trim() ?? "";
+  return all.filter((a) => {
+    if (stateF && a.state !== stateF) return false;
+    if (siteF && a.location.site !== siteF) return false;
+    if (qF) {
+      const hay = [a.asset_tag, a.serial, a.custodian, a.model].join(" ").toLowerCase();
+      if (!hay.includes(qF)) return false;
+    }
+    return true;
+  });
+}
+
+function thirtyDaysAgo(): Date {
+  return new Date(Date.now() - 30 * 86400_000);
+}
+function fourteenDaysAgo(): Date {
+  return new Date(Date.now() - 14 * 86400_000);
+}
+
+export default async function ManagerPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}): Promise<React.ReactElement> {
+  const params = await searchParams;
+  const [assets, report] = await Promise.all([api.assets.list({}), fetchReport()]);
+
+  const longStored = assets.filter((a) => a.state === "stored" && new Date(a.updated_at) < thirtyDaysAgo()).length;
+  const oldRma = assets.filter((a) => a.state === "rma_pending" && new Date(a.updated_at) < fourteenDaysAgo()).length;
+
+  const filtered = filterAssets(assets, params.state, params.site, params.q);
+  const page = Number(params.page ?? "1");
+  const visible = filtered.slice(0, page * PAGE_SIZE);
+  const hasMore = visible.length < filtered.length;
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Manager dashboard (stub)</h1>
-        <p className="text-gray-600 mt-2">
-          Build the asset list with filters (state, site, custodian) here.
-          Linking to <code>/manager/assets/[tag]</code> for detail and{" "}
-          <code>/manager/reconcile</code> for the three-way report.
-        </p>
+      <header>
+        <div className="text-[10px] uppercase tracking-wider text-neutral-500">/ manager</div>
+        <h1 className="text-2xl font-semibold mt-1">Assets</h1>
+        <p className="text-sm text-neutral-600 mt-1">{assets.length.toLocaleString()} total</p>
+      </header>
+
+      {report ? <MorningBands report={report} longStored={longStored} oldRma={oldRma} /> : null}
+
+      <ManagerFilters />
+
+      <div className="bg-white border border-neutral-200 rounded-md overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-neutral-200 bg-neutral-50">
+              <th className="text-left px-3 py-2 text-[10px] uppercase tracking-wider text-neutral-500 font-medium">Tag</th>
+              <th className="text-left px-3 py-2 text-[10px] uppercase tracking-wider text-neutral-500 font-medium">State</th>
+              <th className="text-left px-3 py-2 text-[10px] uppercase tracking-wider text-neutral-500 font-medium">Site</th>
+              <th className="text-left px-3 py-2 text-[10px] uppercase tracking-wider text-neutral-500 font-medium">Custodian</th>
+              <th className="text-left px-3 py-2 text-[10px] uppercase tracking-wider text-neutral-500 font-medium">Updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            {visible.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-3 py-8 text-center text-sm text-neutral-500">
+                  No assets match these filters. Try widening the state or clearing the search.
+                </td>
+              </tr>
+            ) : (
+              visible.map((a) => (
+                <tr key={a.asset_tag} className="border-b border-neutral-100 hover:bg-neutral-50">
+                  <td className="px-3 py-2"><Tag value={a.asset_tag} href={`/manager/assets/${a.asset_tag}`} /></td>
+                  <td className="px-3 py-2"><StatePill state={a.state} /></td>
+                  <td className="px-3 py-2 text-neutral-700">{a.location.site}</td>
+                  <td className="px-3 py-2 text-neutral-700 font-mono text-xs">{a.custodian}</td>
+                  <td className="px-3 py-2 text-neutral-500 text-xs">{relativeTime(a.updated_at)}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+        {hasMore ? (
+          <div className="border-t border-neutral-200 bg-neutral-50 p-3 flex justify-center">
+            <a href={`?${new URLSearchParams({ ...params, page: String(page + 1) } as Record<string, string>).toString()}`} className="text-xs text-neutral-700 hover:underline">
+              Load {Math.min(PAGE_SIZE, filtered.length - visible.length)} more · {visible.length} of {filtered.length}
+            </a>
+          </div>
+        ) : null}
       </div>
-      <ul className="space-y-2">
-        <li>
-          <Link
-            className="text-blue-700 hover:underline"
-            href="/manager/reconcile"
-          >
-            Three-way reconciliation
-          </Link>
-        </li>
-      </ul>
     </div>
   );
 }
