@@ -1,13 +1,86 @@
-export default function ManagerReconcilePage() {
+import { DriftCard } from "./_components/DriftCard";
+import type { ReconcileReport } from "@/lib/reconcile/types";
+
+async function fetchReport(): Promise<ReconcileReport | { error: string }> {
+  const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000";
+  const res = await fetch(`${baseUrl}/api/reconcile`, { cache: "no-store" });
+  if (!res.ok) return { error: `HTTP ${res.status}` };
+  return (await res.json()) as ReconcileReport;
+}
+
+export default async function ManagerReconcilePage(): Promise<React.ReactElement> {
+  const report = await fetchReport();
+  if ("error" in report) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-md p-4 text-sm text-red-900">
+        Couldn&apos;t load the reconciliation report: {report.error}
+      </div>
+    );
+  }
+
+  const total = report.counts.today + report.counts.this_week + report.counts.watch;
+
   return (
-    <div className="p-2">
-      <h1 className="text-2xl font-bold">Reconciliation report (stub)</h1>
-      <p className="text-gray-600 mt-2">
-        Build the three-way reconciliation view. Pull the joined data from the
-        server route at <code>/api/reconcile</code> (which you also need to
-        build) and present mismatches in a way that helps an asset manager
-        decide what to investigate. See <code>docs/tips.md</code>.
-      </p>
+    <div className="space-y-6 max-w-3xl">
+      <header>
+        <div className="text-[10px] uppercase tracking-wider text-neutral-500">/ manager / reconcile</div>
+        <h1 className="text-2xl font-semibold mt-1">Reconciliation</h1>
+        <p className="text-sm text-neutral-600 mt-1">
+          {report.counts.today} today · {report.counts.this_week} this week · {report.counts.watch} to watch
+          {" · "}
+          <span className="text-neutral-500">{report.counts.expected.toLocaleString()} expected (collapsed)</span>
+        </p>
+        <p className="text-xs text-neutral-500 mt-0.5 font-mono">Generated {new Date(report.generated_at).toLocaleString()}</p>
+      </header>
+
+      {total === 0 ? (
+        <div className="bg-neutral-50 border border-neutral-200 rounded-md p-6 text-center text-sm text-neutral-600">
+          All assets agree on every detail today. <span className="text-neutral-500">This is suspicious — when did you last reset?</span>
+        </div>
+      ) : null}
+
+      {report.tiers.today.length > 0 ? (
+        <section>
+          <h2 className="text-[10px] uppercase tracking-wider text-red-700 font-semibold mb-3">
+            Investigate today ({report.tiers.today.length})
+          </h2>
+          <div className="space-y-2">
+            {report.tiers.today.map((c, i) => <DriftCard key={`${c.category}-${c.asset_tag}-${i}`} card={c} />)}
+          </div>
+        </section>
+      ) : null}
+
+      {report.tiers.this_week.length > 0 ? (
+        <section>
+          <h2 className="text-[10px] uppercase tracking-wider text-amber-700 font-semibold mb-3">
+            Investigate this week ({report.tiers.this_week.length})
+          </h2>
+          <div className="space-y-2">
+            {report.tiers.this_week.map((c, i) => <DriftCard key={`${c.category}-${c.asset_tag}-${i}`} card={c} />)}
+          </div>
+        </section>
+      ) : null}
+
+      {report.tiers.watch.length > 0 ? (
+        <section>
+          <h2 className="text-[10px] uppercase tracking-wider text-neutral-600 font-semibold mb-3">
+            Worth knowing ({report.tiers.watch.length})
+          </h2>
+          <div className="space-y-2">
+            {report.tiers.watch.map((c, i) => <DriftCard key={`${c.category}-${c.asset_tag}-${i}`} card={c} />)}
+          </div>
+        </section>
+      ) : null}
+
+      <details className="border-t border-dashed border-neutral-300 pt-3">
+        <summary className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium cursor-pointer">
+          Expected differences ({report.counts.expected.toLocaleString()}) — not drift
+        </summary>
+        <div className="text-xs text-neutral-600 mt-3 space-y-1.5">
+          <div className="flex justify-between"><span>Stored / received / RMA — not tracked by facilities</span><span className="font-mono">{report.expected.stored_or_received_not_racked}</span></div>
+          <div className="flex justify-between"><span>Disposed — not tracked by facilities</span><span className="font-mono">{report.expected.disposed_not_racked}</span></div>
+        </div>
+      </details>
     </div>
   );
 }
