@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { IBM_Plex_Sans, IBM_Plex_Serif, IBM_Plex_Mono } from "next/font/google";
-import { RoleSwitcher } from "@/components/RoleSwitcher";
-import { AudioToggle } from "@/components/AudioToggle";
+import { GlobalHeader } from "@/components/GlobalHeader";
 import "./globals.css";
 
 const plexSans = IBM_Plex_Sans({
@@ -40,16 +38,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${plexSans.variable} ${plexSerif.variable} ${plexMono.variable}`}>
       <body className="bg-neutral-50 text-neutral-900 font-sans">
-        <header className="border-b border-neutral-200 bg-white">
-          <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-            <Link href="/" className="font-semibold tracking-tight">Asset tracking</Link>
-            <div className="flex items-center gap-2">
-              <AudioToggle />
-              <RoleSwitcher />
-            </div>
-          </div>
-        </header>
-        <main className="max-w-5xl mx-auto px-4 py-6">{children}</main>
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:px-3 focus:py-1.5 focus:border focus:border-neutral-300 focus:rounded-md focus:text-sm focus:shadow-md"
+        >
+          Skip to content
+        </a>
+        <GlobalHeader />
+        <main id="main" className="max-w-5xl mx-auto px-4 py-6">{children}</main>
       </body>
     </html>
   );
