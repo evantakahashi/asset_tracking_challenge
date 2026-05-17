@@ -56,7 +56,16 @@ describe("classifyDrift", () => {
       fin(),
       NOW,
     );
-    expect(result).toMatchObject({ category: "mislocated", tier: "today" });
+    expect(result).toMatchObject({
+      category: "mislocated",
+      tier: "today",
+      asset_tag: "C0000001",
+      views: {
+        ops: { display: "R-01/U05" },
+        facilities: { display: "Lab-A/Bay-1/Aisle-1/R-01/U07" },
+      },
+      action: expect.stringContaining("rack"),
+    });
   });
 
   it("flags ghost_on_rack when ops is disposed and facilities still has a row", () => {
@@ -91,6 +100,20 @@ describe("classifyDrift", () => {
   it("flags off_books when ops has the asset and finance has no record", () => {
     const result = classifyDrift(ops(), null, null, NOW);
     expect(result).toMatchObject({ category: "off_books", tier: "this_week" });
+  });
+
+  it("flags off_books even when facilities has a row (joint check is ops+!finance)", () => {
+    const result = classifyDrift(ops(), fac(), null, NOW);
+    expect(result).toMatchObject({
+      category: "off_books",
+      tier: "this_week",
+      asset_tag: "C0000001",
+      views: {
+        ops: { display: "R-01/U05" },
+        facilities: { display: expect.any(String) },
+        finance: null,
+      },
+    });
   });
 
   it("flags ghost_on_books when finance has a tag and ops has no record", () => {
@@ -137,6 +160,10 @@ describe("classifyDrift", () => {
 
   it("marks expected: stored asset without a facilities row is not drift", () => {
     expect(classifyDrift(ops({ state: "stored" }), null, fin(), NOW)).toEqual({ kind: "expected" });
+  });
+
+  it("marks expected: rma_pending asset without a facilities row is not drift", () => {
+    expect(classifyDrift(ops({ state: "rma_pending" }), null, fin(), NOW)).toEqual({ kind: "expected" });
   });
 
   it("marks expected: received asset without a facilities row is not drift", () => {

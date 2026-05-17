@@ -5,7 +5,8 @@ export const STALE_DAYS = 60;
 export const DISPOSAL_LAG_DAYS = 30;
 
 function daysBetween(a: Date, b: Date): number {
-  return Math.abs(a.getTime() - b.getTime()) / 86400_000;
+  const diff = Math.abs(a.getTime() - b.getTime());
+  return Number.isFinite(diff) ? diff / 86400_000 : Infinity;
 }
 
 function opsView(o: Asset): ViewSnapshot {
@@ -91,7 +92,7 @@ export function classifyDrift(
           facilities: facView(facilities),
           finance: finance ? finView(finance) : null,
         },
-        action: "Walk the rack and re-scan whichever is correct.",
+        action: "Walk the rack and re-scan; whichever system disagrees with the physical reality gets corrected.",
       };
     }
   }
@@ -104,7 +105,7 @@ export function classifyDrift(
       tier: "this_week",
       asset_tag: tag,
       views: { ops: null, facilities: facilities ? facView(facilities) : null, finance: finView(finance) },
-      action: "Ping procurement — was this equipment ever shipped?",
+      action: "Check with procurement whether this asset was actually received; if not, write off the PO line.",
     };
   }
 
