@@ -1,5 +1,6 @@
 import { DriftCard } from "./_components/DriftCard";
 import { LastVisitBand } from "./_components/LastVisitBand";
+import { CopyForSlackButton } from "./_components/CopyForSlackButton";
 import type { ReconcileReport } from "@/lib/reconcile/types";
 
 async function fetchReport(): Promise<ReconcileReport | { error: string }> {
@@ -36,7 +37,10 @@ export default async function ManagerReconcilePage(): Promise<React.ReactElement
           {" · "}
           <span className="text-neutral-500">{report.counts.expected.toLocaleString()} expected (collapsed)</span>
         </p>
-        <p className="text-xs text-neutral-500 mt-0.5 font-mono">Generated {new Date(report.generated_at).toLocaleString()}</p>
+        <div className="mt-0.5 flex items-center justify-between">
+          <p className="text-xs text-neutral-500 font-mono">Generated {new Date(report.generated_at).toLocaleString()}</p>
+          <CopyForSlackButton report={report} />
+        </div>
       </header>
 
       <LastVisitBand current={currentKeys} />
