@@ -1,0 +1,39 @@
+# Update `app` after `fly apps create <name>`. Region SJC = San Jose (near Sunnyvale).
+app = "asset-tracking-api"
+primary_region = "sjc"
+
+[build]
+dockerfile = "Dockerfile"
+
+[env]
+PORT = "8080"
+HOST = "0.0.0.0"
+API_DATA_DIR = "/app/data"
+LOG_LEVEL = "info"
+
+[[mounts]]
+source = "asset_data"
+destination = "/app/data"
+
+[[services]]
+internal_port = 8080
+protocol = "tcp"
+auto_stop_machines = "stop"
+auto_start_machines = true
+min_machines_running = 0
+
+[[services.ports]]
+handlers = ["http"]
+port = 80
+force_https = true
+
+[[services.ports]]
+handlers = ["tls", "http"]
+port = 443
+
+[[services.http_checks]]
+interval = "30s"
+timeout = "3s"
+grace_period = "5s"
+method = "get"
+path = "/health"
