@@ -4,6 +4,7 @@ import { CopyForStandupButton } from "./_components/CopyForStandupButton";
 import { TrendWidget } from "./_components/TrendWidget";
 import { PrintLayout } from "./_components/PrintLayout";
 import { PrintButton } from "./_components/PrintButton";
+import { ReconcileStickyBar } from "./_components/ReconcileStickyBar";
 import type { ReconcileReport } from "@/lib/reconcile/types";
 
 async function fetchReport(): Promise<ReconcileReport | { error: string }> {
@@ -42,15 +43,10 @@ export default async function ManagerReconcilePage(): Promise<React.ReactElement
             {" · "}
             <span className="text-neutral-500">{report.counts.expected.toLocaleString()} expected (collapsed)</span>
           </p>
-          <div className="mt-0.5 flex items-center justify-between">
-            <p className="text-xs text-neutral-500 font-mono">Generated {new Date(report.generated_at).toLocaleString()}</p>
-            <div className="flex items-center gap-2">
-              <PrintButton />
-              <CopyForStandupButton report={report} />
-            </div>
-          </div>
+          <p className="text-xs text-neutral-500 font-mono mt-0.5">Generated {new Date(report.generated_at).toLocaleString()}</p>
         </header>
 
+        <ReconcileStickyBar report={report} />
         <TrendWidget report={report} />
         <LastVisitBand current={currentKeys} />
 
