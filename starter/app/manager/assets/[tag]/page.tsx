@@ -62,14 +62,15 @@ export default async function ManagerAssetDetailPage({
           <div className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium mb-2">Ops</div>
           <StatePill state={asset.state} />
           <div className="text-xs mt-2 font-mono">{opsRack ?? asset.location.room}</div>
+          <div className="text-[10px] text-neutral-400 mt-1">updated {relativeTime(asset.updated_at)}</div>
         </div>
         <div className={`bg-white border rounded-md p-3 ${hasDrift ? "border-amber-300 bg-amber-50" : "border-neutral-200"}`}>
           <div className="text-[10px] uppercase tracking-wider text-neutral-500 font-medium mb-2">Facilities</div>
           {fac ? (
             <>
               <div className="text-xs font-mono">{facRack}</div>
-              <div className="text-[10px] text-neutral-500 mt-1">last observed {relativeTime(fac.last_observed)}</div>
               {hasDrift ? <div className="text-[10px] text-amber-800 mt-1">⚠ disagrees with ops</div> : null}
+              <div className="text-[10px] text-neutral-400 mt-1">last seen {relativeTime(fac.last_observed)}</div>
             </>
           ) : (
             <div className="text-xs text-neutral-500">— not tracked</div>
@@ -81,7 +82,9 @@ export default async function ManagerAssetDetailPage({
             <>
               <div className="text-xs">{fin.status}</div>
               <div className="text-[10px] text-neutral-500 mt-1 font-mono">${fin.book_value_usd.toLocaleString()}</div>
-              <div className="text-[10px] text-neutral-500">{fin.capitalized_on}</div>
+              <div className="text-[10px] text-neutral-400 mt-1">
+                {fin.capitalized_on ? `as of ${fin.capitalized_on}` : "not yet capitalized"}
+              </div>
             </>
           ) : (
             <div className="text-xs text-neutral-500">— missing</div>
