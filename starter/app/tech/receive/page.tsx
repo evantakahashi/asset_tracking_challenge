@@ -11,6 +11,7 @@ import { api, ApiError } from "@/lib/api-client";
 import { useScanLog } from "@/lib/scan-log/use-scan-log";
 import { useScanFeedback } from "@/lib/scan-feedback/use-scan-feedback";
 import { CameraButton } from "@/components/scan/CameraButton";
+import { EmptyState } from "@/components/EmptyState";
 import { getCurrentUserId } from "@/lib/auth";
 import { parseLocation } from "@/lib/location";
 import type { Asset, AssetClass } from "@/lib/types";
@@ -138,6 +139,13 @@ export default function TechReceivePage(): React.ReactElement {
       />
 
       <ScanInput onScan={onTagScan} label="Asset tag" placeholder="Scan or type a tag" disabled={busy} />
+
+      {mode === "idle" && !receipt && !error ? (
+        <EmptyState
+          headline="Scan a tag to begin."
+          body={<>Try <code className="font-mono bg-neutral-100 px-1 rounded">C0009001</code> from the <a href="/dev/barcodes" className="underline">printable barcode sheet</a>.</>}
+        />
+      ) : null}
 
       {error ? (
         <ApiErrorBanner code={error.code} message={error.message} details={error.details} codeMessages={ERROR_MESSAGES} />

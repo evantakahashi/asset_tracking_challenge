@@ -7,6 +7,7 @@ import { AssetCard } from "@/components/scan/AssetCard";
 import { ScanReceipt } from "@/components/scan/ScanReceipt";
 import { ScanLog } from "@/components/scan/ScanLog";
 import { ApiErrorBanner } from "@/components/ApiErrorBanner";
+import { EmptyState } from "@/components/EmptyState";
 import { api, ApiError } from "@/lib/api-client";
 import { useScanLog } from "@/lib/scan-log/use-scan-log";
 import { useScanFeedback } from "@/lib/scan-feedback/use-scan-feedback";
@@ -117,6 +118,13 @@ export default function TechStorePage(): React.ReactElement {
           </button>
         </>
       )}
+
+      {!asset && !receipt && !error ? (
+        <EmptyState
+          headline="Scan the asset, then its storage shelf."
+          body={<>Try <code className="font-mono bg-neutral-100 px-1 rounded">C0000101</code> + <code className="font-mono bg-neutral-100 px-1 rounded">Lab-Building-A/Storage-1/SHELF-3</code>.</>}
+        />
+      ) : null}
 
       {error ? <ApiErrorBanner code={error.code} message={error.message} details={error.details} codeMessages={ERROR_MESSAGES} /> : null}
 

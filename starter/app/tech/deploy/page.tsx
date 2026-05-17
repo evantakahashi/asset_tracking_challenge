@@ -7,6 +7,7 @@ import { AssetCard } from "@/components/scan/AssetCard";
 import { ScanReceipt } from "@/components/scan/ScanReceipt";
 import { ScanLog } from "@/components/scan/ScanLog";
 import { ApiErrorBanner } from "@/components/ApiErrorBanner";
+import { EmptyState } from "@/components/EmptyState";
 import { api, ApiError } from "@/lib/api-client";
 import { useScanLog } from "@/lib/scan-log/use-scan-log";
 import { useScanFeedback } from "@/lib/scan-feedback/use-scan-feedback";
@@ -116,6 +117,13 @@ export default function TechDeployPage(): React.ReactElement {
           <button type="button" onClick={() => setAsset(null)} className="text-xs text-neutral-500 hover:text-neutral-700">Cancel — scan a different asset</button>
         </>
       )}
+
+      {!asset && !receipt && !error ? (
+        <EmptyState
+          headline="Scan the asset, then a complete rack location."
+          body={<>Try <code className="font-mono bg-neutral-100 px-1 rounded">C0000104</code> + <code className="font-mono bg-neutral-100 px-1 rounded">Lab-Building-A/Bay-12/Aisle-3/B-04/U05</code>. Rack and RU both required.</>}
+        />
+      ) : null}
 
       {error ? <ApiErrorBanner code={error.code} message={error.message} details={error.details} codeMessages={ERROR_MESSAGES} /> : null}
 
