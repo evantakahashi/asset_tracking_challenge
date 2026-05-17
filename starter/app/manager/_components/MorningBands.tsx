@@ -1,12 +1,9 @@
 import Link from "next/link";
-import type { ReconcileReport } from "@/lib/reconcile/types";
+import type { DriftCategory, ReconcileReport } from "@/lib/reconcile/types";
+import { staticLabelFor } from "@/lib/reconcile/labels";
 
-function categoryLabel(c: string): string {
-  return c.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
-}
-
-function categoryCounts(cards: { category: string }[]): { category: string; count: number }[] {
-  const map = new Map<string, number>();
+function categoryCounts(cards: { category: DriftCategory }[]): { category: DriftCategory; count: number }[] {
+  const map = new Map<DriftCategory, number>();
   for (const c of cards) map.set(c.category, (map.get(c.category) ?? 0) + 1);
   return Array.from(map.entries()).map(([category, count]) => ({ category, count })).sort((a, b) => b.count - a.count);
 }
@@ -25,7 +22,7 @@ export function MorningBands({ report, longStored, oldRma }: { report: Reconcile
               <li key={c.category} className="flex justify-between items-center text-sm">
                 <Link href={`/manager/reconcile#${c.category}`} className="text-neutral-700 hover:underline">
                   <span className="font-mono text-red-700 font-semibold mr-2">{c.count}</span>
-                  {categoryLabel(c.category)}
+                  {staticLabelFor(c.category)}
                 </Link>
                 <span className="text-[10px] text-neutral-500">→ reconcile</span>
               </li>
@@ -42,7 +39,7 @@ export function MorningBands({ report, longStored, oldRma }: { report: Reconcile
               <li key={c.category} className="flex justify-between items-center text-sm">
                 <Link href={`/manager/reconcile#${c.category}`} className="text-neutral-700 hover:underline">
                   <span className="font-mono text-neutral-700 font-semibold mr-2">{c.count}</span>
-                  {categoryLabel(c.category)}
+                  {staticLabelFor(c.category)}
                 </Link>
                 <span className="text-[10px] text-neutral-500">→ reconcile</span>
               </li>
