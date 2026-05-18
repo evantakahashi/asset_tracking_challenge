@@ -29,11 +29,6 @@ export function DriftCard({ card }: { card: DriftCardType }): React.ReactElement
         <div className="text-xs text-neutral-700 mt-2">
           <span className="font-semibold">Action:</span> {card.action}
         </div>
-        {card.ambiguity ? (
-          <div className="font-serif italic text-[11px] text-neutral-500 mt-2 leading-snug">
-            {card.ambiguity}
-          </div>
-        ) : null}
         {showContext ? <div className="text-[10px] text-neutral-500 mt-1">{card.context}</div> : null}
         {typeof card.age_days === "number" && card.category !== "stale_rack_obs" && card.category !== "disposed_but_capitalized" ? (
           <div className="text-[10px] text-neutral-400 mt-1">{ageLabel(card.age_days)}</div>
