@@ -1,124 +1,105 @@
 # Asset tracking — submission
 
-Take-home for Cerebras' AI Engineering Intern, Manufacturing role. Frontend on top of the provided asset-tracking API.
+Take-home for Cerebras' AI Engineering Intern, Manufacturing role.
 
 - **Live:** _(set after deploy — Vercel URL)_
 - **Loom:** _(set after recording)_
-- **Design spec:** [`docs/superpowers/specs/2026-05-16-asset-tracking-design.md`](./docs/superpowers/specs/2026-05-16-asset-tracking-design.md)
-- **Implementation plan:** [`docs/superpowers/plans/2026-05-16-asset-tracking.md`](./docs/superpowers/plans/2026-05-16-asset-tracking.md)
+- **Spec history:** [`docs/superpowers/specs/`](./docs/superpowers/specs/) · [Implementation plans](./docs/superpowers/plans/)
 
 ## What's here
 
-Two halves of one app, two personas:
+Two halves of one app. Lab techs scan instruments through state transitions (`/tech/{receive,store,deploy,transfer}`). Asset managers triage drift between three systems (`/manager`) and dig into specific instruments (`/manager/assets/[tag]`).
 
-- **`/tech/{receive,store,deploy,transfer}`** — mobile-first scan workflows for the lab tech in the dock bay. Camera scanner via `@zxing/browser`. Persistent scan log per device. Microcopy written for the gloves-on-at-11pm case.
-- **`/manager`** — desktop dashboard. Morning briefing bands (drift hot list + this-week stragglers) above a filterable, paginated asset list. URL params persist filters.
-- **`/manager/assets/[tag]`** — asset detail with three-system snapshot (ops/facilities/finance side by side) and the full event timeline grouped by day.
-- **`/manager/reconcile`** — the marquee page. Seven drift categories grouped into three severity tiers, each rendered as a card showing what each system claims plus a one-sentence action. Expected differences (~250 stored/received-without-facilities) collapsed at bottom — counted, not listed.
-- **`/dev/barcodes`** — printable Code 128 barcode sheet. Print or scan from screen with the in-app camera.
+## What I built — and what I chose not to
+
+Subtraction first. I cut:
+
+| Cut | Why |
+|---|---|
+| Server-side pagination on the directory | 1,000 rows. Client-side filtering is honest at this scale. |
+| Column-header sorts on the directory | The standup wants `updated_at DESC`. Sort buttons serve a power-user the brief doesn't include. |
+| Optimistic UI on scans | 150ms round-trip is honest. Fake-fast undermines trust in a forensic tool. |
+| Manager-side write actions | Fixes happen in the physical world (a re-scan) or in finance's system. The manager view is read-only and acts as a delegation surface. |
+| Acknowledge/snooze on drift cards | The report is regenerable. The value is *finding* drift, not tracking who's seen it. |
+| RMA workflow UI, offline scan queueing, parent-child UI, bulk import, dark mode, auth | Brief out-of-scope. |
+| Trend widget / sparkline | Sparkline mode requires 4+ days of localStorage history (invisible during review). Breakdown mode duplicates the tier counts above. |
+| 3-letter category codes (MIS/GHR/...) | Labels carry the meaning by themselves. Codes are power-user shorthand that confuses first reads. |
+| "Ambiguity" sub-line on Tier 3 cards | Information collapsed into the action sentence where it belongs. |
+
+## Three calls I nearly made the other way
+
+1. **Toast vs full-screen scan confirmation.** Went full-screen. A tech in gloves and a cold dock bay catches peripheral motion better than they read foveal text. The 1.2s takeover registers without requiring attention.
+2. **Categorize by data shape vs by manager action.** Kept the data-shape labels (*Mislocated*, *Facilities still has it racked*) because they describe what's actually wrong. Added an explicit Owner column (tech / facilities / procurement / finance) on every drift row — the answer to *"who do I tell at standup."* Both are required for the 60-second framing.
+3. **Reconcile on-demand vs scheduled.** On-demand with `no-store` cache. Monday morning behavior is bursty; staleness costs more than load.
+
+## One inconsistency I found in the API
+
+The `/v1/scans/receive` route returns error code `invalid_location` for *any* zod schema validation failure on the request body, not just location-related errors. A mismatched `asset_class` enum or a missing `serial` field also surfaces as `invalid_location`. The same pattern repeats on `store`, `deploy`, and `transfer` — every schema failure surfaces as `invalid_location`. The code name is misleading. See `api/src/routes/scans.ts:25-29`.
+
+Secondary observation: the receive endpoint uses error code `and_match_failed` for the serial mismatch case (409 on duplicate tag with a different serial). Reads as a typo from `serial_match_failed` or a leftover from a refactor. Not a bug, but worth normalizing. See `api/src/routes/scans.ts:51`.
 
 ## How to run locally
 
 ```bash
 pnpm install
 cp starter/.env.example starter/.env
-pnpm dev                              # API on :8080, starter on :3000
+pnpm dev      # API on :8080, starter on :3000
 ```
-
-Open `http://localhost:3000`.
 
 ## Architecture in one paragraph
 
-Next.js App Router. Server components for the read-only manager pages (list, detail, reconcile). Client components for the four tech scan flows + the filter chips. Every mutation goes through a server-side route handler under `starter/app/api/scans/*` — these call the upstream scan endpoint, then trigger the appropriate writebacks to facilities + finance, keeping the bearer token off the browser. The reconciliation join is a server route handler at `starter/app/api/reconcile/route.ts`; the manager page just fetches its JSON output. A pure classifier function in `starter/lib/reconcile/classify.ts` is the most-tested piece of logic in the project — 18 cases covering every drift category, the "expected" buckets, the multi-category collision rule, the NaN-date defense, and the Tier-3 ambiguity sub-line.
-
-## Three calls I nearly made the other way
-
-1. **Visual style: lab-industrial (off-white + monospace blueprint) vs. calm minimal.** I prototyped a warm off-white / blueprint-blue treatment that read as "tool a lab tech would actually use." It tested well in mockups but the per-screen typography work to keep the mono/sans rhythm disciplined would have cost ~3 hours that I'd rather spend on reconciliation depth and microcopy. Calm minimal (black/white + restrained green/amber/red) still reads as considered without the maintenance cost. Tag/serial monospace stays.
-2. **Manager dashboard top-of-page: KPI tiles vs. curated questions.** The standard SaaS move is a row of stat tiles ("701 in service · 12 drift cases · 5 stored"). I chose curated questions instead ("Look at this morning: 3 mislocated in service → reconcile") because the brief specifically asks "what should they see *first* in the 60-second standup." KPI tiles tell you *what exists*. Curated questions tell you *what to act on*. The brief's evaluation framing distinguishes those two answers.
-3. **Scan-success feedback: auto-clearing receipt vs. persistent receipt + log.** Auto-clearing is cleaner. But over a 47-scan shift, errors disappearing on the next scan is a real failure mode — the tech only finds out on Monday when a manager catches the gap. The hybrid pattern (persistent receipt card + rolling log of the last 10 scans below) costs one extra component and gives both *confidence on this scan* and *a trail of the last 10*. Errors get a different color in the log so the tech can see "I had 3 fails in a row at 11:14" without leaving the screen.
-
-## What I deliberately did not build
-
-| Skipped | Why |
-|---|---|
-| Server-side pagination on `/manager` | ~1,000 rows. Client-side filtering is fine. Pagination matters at 10× growth. |
-| Column-header sorts on the asset list | `updated_at DESC` is what a standup wants. Sort buttons serve a power-user the brief's persona doesn't include. |
-| Optimistic UI on scans | Round-trip is ~150ms. Tech needs the real receipt, not a guess. Honesty over fake speed. |
-| Manager-side write actions | No "force-delete drift" or "edit state" buttons. Fixes happen in the physical world (re-scan) or in finance's system, not in this UI. |
-| Acknowledge / snooze on drift cards | Would require persistent human state. The report is regenerable every load; the value is *finding* drift, not tracking what's been seen. |
-| End-to-end browser tests | Unit tests on the classifier (17 cases) and the scan route handlers (4 integration smokes) cover the highest-leverage logic. The four scan flows are short and manually verifiable. |
-| RMA workflow UI | Brief explicitly out-of-scope. |
-| Offline / queued scans | Brief explicitly out-of-scope. |
-| Authentication | Brief explicitly out-of-scope; cookie-based role switcher already in starter. |
-| Parent-child asset relationships | Brief explicitly out-of-scope. |
-| Bulk import/export | Brief explicitly out-of-scope. |
-| Dark mode | Tech-at-11pm framing would justify it. Cost vs. polish elsewhere — picked elsewhere. Flagged as one of the "three calls" alternatives. |
+Next.js 15 App Router. RSCs for read-only manager pages, client components only where they earn it. Every scan mutation goes through a server-side route handler under `starter/app/api/scans/*` that does the upstream scan plus the appropriate writebacks — token never reaches the browser. The reconciliation join is a server route handler at `starter/app/api/reconcile/route.ts`. A pure classifier at `starter/lib/reconcile/classify.ts` is the most-tested piece of logic in the project — covers every drift category, the "expected" non-drift bucket, the multi-category collision rule, the NaN-date defense, and the missing-from-facilities edge case.
 
 ## What we don't prevent (per CONTEXT.md)
 
-CONTEXT.md asks: *"if your design would prevent layering them on later, flag it in your README."* Three named extensions; none are blocked by our design.
+CONTEXT.md asks: *"if your design would prevent layering them on later, flag it in your README."* Three named extensions; none are blocked.
 
-1. **Parent-child relationships.** The API already carries `parent_asset_tag` on every Asset. We don't render it. Layering in: a "Parent" line on `/manager/assets/[tag]` and a "Children (N)" section listing assets whose `parent_asset_tag` equals the current tag. Estimated effort: <1 hour.
+1. **Parent-child relationships** — `parent_asset_tag` exists on every asset. We render it in the detail page's metadata block; layering in a `Children (N)` section is <1h.
+2. **Offline scan queueing** — `useScanLog` already records every attempt. Layering in a service worker that queues to IndexedDB on `!navigator.onLine` and replays on `online` is additive. ~3–4h.
+3. **Tag-as-asset** — tags are strings in our model. Treating physical stickers as first-class entities requires a `tags` resource on the API. Our UI doesn't prevent it; it just doesn't care today.
 
-2. **Offline scan queueing.** Our scan flow synchronously POSTs through `/api/scans/*`. To layer in offline queueing, add a service worker that intercepts those routes when `!navigator.onLine`, queues into IndexedDB, and replays on the `online` event. The `useScanLog` hook already records every attempt with status — the queue is additive. Estimated: 3–4 hours.
+## What I'd build next (ordered)
 
-3. **Tag-as-asset.** Tags are strings in our data model. Treating physical stickers as assets with their own lifecycle (vendor, batch, printed-on, applied-to) would add a `tags` resource on the API with its own state machine. Schema change required, but our UI doesn't *prevent* this — it just doesn't care about tags-as-entities today. Estimated: half a day for a working pass.
-
-## Pushback on the brief / starter
-
-A few things I noticed while building. These aren't blockers — they're observations a contractor would flag back to the team that owns the starter.
-
-- **`API_TOKEN` is theater for the local API.** The Fastify backend has no auth middleware — the bearer token is ignored on every request. I kept the `/api/upstream/*` proxy → token shape anyway because in a real multi-tenant deployment it would matter, but the starter's note that says "treat as secret" is aspirational for the local dev path. Worth a brief mention in `starter/docs/tips.md`.
-- **Seed data's `updated_at` is uniform.** Every one of the ~1,000 seeded assets has `updated_at = 2026-01-02T09:00:00Z`. The events table has spread-out timestamps (the seeder simulates a year of history), but `assets.updated_at` is fixed at one point. That means age-based bands like "stored over 30 days" show essentially the full count of stored assets on a fresh database. After demo activity the field updates correctly. I built the band anyway — it tells the truth about state — but the seeded counts are noisy until you scan. If a candidate doesn't notice, they'll think their band is broken.
-- **The "two-sided custody handoff" framing for transfer trips you up for a minute.** The brief says transfer is "a two-sided custody handoff. Scan the asset, then scan the receiving party's badge." I expected two badge scans (from + to). The endpoint actually takes the logged-in user as `user_id` automatically and only needs `to_custodian`. The brief says exactly this in the next sentence, but the phrase "two-sided" is misleading.
-- **The `incomplete_deploy_location` error code is descriptive but the error message in the API (`"Deploy requires site, room, rack, and ru"`) omits which fields are actually missing.** I worked around this by pre-validating on the frontend and surfacing the missing field there, but it would be a small DX win to have the API return `details: { missing: ["ru"] }` instead of nothing.
+1. **Bulk re-import for end-of-quarter audit.** A manager walks the floor, collects 50 mismatch corrections, and currently has to scan each one individually. A CSV upload that fans out to scan endpoints would close the loop. Below the cut because it serves the audit cadence (quarterly) not the daily flow.
+2. **Service-worker offline scan queue.** The dock bay has poor wifi. Below the cut because the brief explicitly out-of-scopes offline mode and the rest of the build is more visible.
+3. **Acknowledge / snooze persistence on drift cards.** Real-world managers want a "I'm on this" toggle. Below the cut because the brief vetoes persistent human state and the report is regenerable. The right place to add this is a server-side state store, not the report itself.
 
 ## Tests
 
 ```bash
-pnpm test                 # 83 tests across api + starter
+pnpm test            # 100 tests across api (23) + starter (77)
 ```
 
-The marquee test file is `starter/lib/reconcile/classify.test.ts` — 17 cases covering every drift category, the "expected" buckets, the multi-category collision rule, and the NaN-date defense. Reviewers should read this file to assess code judgment.
-
-Other notable tests:
-- `starter/app/api/scans/{store,deploy}/route.test.ts` — integration smokes asserting writebacks fire (or don't fire) with the right payloads
-- `starter/app/api/reconcile/route.test.ts` — smoke that the join returns the documented shape and classifies a planted mislocation correctly
+The marquee test file is `starter/lib/reconcile/classify.test.ts` — covers every drift category, the expected buckets, the multi-category collision rule, the NaN-date defense, the missing-from-facilities edge case. Reviewers should read this file to assess code judgment.
 
 ## Deployment
 
-- **API → Fly.io.** `fly launch` from `api/` (Dockerfile already there, `api/fly.toml` checked in). 1GB volume mounted at `/app/data` for SQLite persistence.
-- **Frontend → Vercel.** `vercel deploy` from `starter/`. Env vars: `API_BASE_URL=https://<your-fly-host>/v1`, `API_TOKEN=<any non-empty string>` (the local API ignores it; we keep the shape).
-
-Both env vars are server-only (no `NEXT_PUBLIC_` prefix). Browser code hits `/api/upstream/*` which attaches the token server-side.
+- **API → Fly.io.** `fly launch` from `api/` (Dockerfile + `fly.toml` checked in). 1GB volume for SQLite persistence.
+- **Frontend → Vercel.** `vercel deploy` from `starter/`. Env: `API_BASE_URL=https://<fly-host>/v1`, `API_TOKEN=<anything>` (server-only; the local API ignores it).
 
 ## Repo layout
 
 ```
-api/                     The provided Fastify backend (unchanged + fly.toml)
-starter/                 The Next.js app — all our work
+api/                  Provided Fastify backend (untouched + fly.toml)
+starter/              Our Next.js app
   app/
-    api/scans/*          Server-side scan route handlers with writebacks
-    api/reconcile/       The three-way join
-    tech/*               Mobile scan workflows
-    manager/*            Desktop dashboard, asset detail, reconciliation
-    dev/barcodes/        Printable Code 128 demo sheet
-  components/
-    scan/                AssetCard, CameraScanner, ScanReceipt, ScanLog
-    ScanInput.tsx        Replaces starter's; adds camera-toggle button
-    StatePill, Tag, ApiErrorBanner
+    api/scans/*       Server-side scan route handlers with writebacks
+    api/reconcile/    The three-way join
+    tech/*            Mobile scan workflows
+    manager/*         Manager dashboard, asset detail
+    dev/barcodes/     Printable Code 128 demo sheet
+  components/         GlobalHeader, scan primitives, OwnerPill, ...
   lib/
-    reconcile/           The marquee — types, classifier, 17 tests
-    scan-log/            localStorage-backed rolling log hook
-    scan-flow/           Reducer for the tech scan state machine
-    location.ts          Parse/serialize slash-delimited barcode strings
-    format.ts            relativeTime + formatLocationShort helpers
+    reconcile/        types, classifier, labels, owner map, format-standup
+    scan-log/         localStorage-backed rolling log
+    scan-undo/        30-second undo hook
+    scan-feedback/    haptic + audio
 docs/
-  CHALLENGE.md           The original brief (unchanged)
-  CONTEXT.md             Background reading (unchanged)
+  CHALLENGE.md        Original brief
+  CONTEXT.md          Background reading
   superpowers/
-    specs/               Design spec
-    plans/               Implementation plan
+    specs/            5 design specs (v1 → v5)
+    plans/            Implementation plans
 ```
 
 ## License
