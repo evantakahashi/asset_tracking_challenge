@@ -6,6 +6,7 @@ import { CopyForStandupButton } from "./reconcile/_components/CopyForStandupButt
 import { PrintButton } from "./reconcile/_components/PrintButton";
 import { PrintLayout } from "./reconcile/_components/PrintLayout";
 import { BlockedBand } from "./_components/BlockedBand";
+import { computeReconcileReport } from "@/lib/reconcile/compute";
 import type { Asset } from "@/lib/types";
 import type { ReconcileReport } from "@/lib/reconcile/types";
 
@@ -13,10 +14,7 @@ const PAGE_SIZE = 50;
 
 async function fetchReport(): Promise<ReconcileReport | null> {
   try {
-    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/reconcile`, { cache: "no-store" });
-    if (!res.ok) return null;
-    return (await res.json()) as ReconcileReport;
+    return await computeReconcileReport();
   } catch {
     return null;
   }
