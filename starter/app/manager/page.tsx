@@ -60,8 +60,11 @@ function emptyMessage(params: Record<string, string | undefined>): string {
   return "No assets match these filters.";
 }
 
+const SITE_TZ = "America/Los_Angeles";
+
 function timePhrase(now: Date): string {
-  const h = now.getHours();
+  const hourStr = now.toLocaleString("en-US", { hour: "numeric", hour12: false, timeZone: SITE_TZ });
+  const h = parseInt(hourStr, 10);
   if (h < 12) return "this morning";
   if (h < 17) return "this afternoon";
   return "this evening";
@@ -80,7 +83,7 @@ function leadSentence(report: ReconcileReport | null): string {
 }
 
 function nowHeader(): string {
-  return new Date().toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  return new Date().toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: SITE_TZ });
 }
 
 export default async function ManagerPage({
