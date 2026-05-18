@@ -1,5 +1,5 @@
 # Update `app` after `fly apps create <name>`. Region SJC = San Jose (near Sunnyvale).
-app = "asset-tracking-api"
+app = "asset-tracking-evan"
 primary_region = "sjc"
 
 [build]
