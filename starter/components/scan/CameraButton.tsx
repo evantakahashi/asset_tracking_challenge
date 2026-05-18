@@ -35,9 +35,10 @@ export function CameraButton({
         aria-label={ariaLabel}
         onClick={() => setOpen(true)}
         disabled={disabled}
-        className="px-3 min-h-[44px] rounded-md border border-neutral-300 hover:bg-neutral-50 text-sm"
+        className="flex items-center gap-1.5 px-4 min-h-[44px] rounded-md border border-neutral-300 hover:bg-neutral-50 text-sm font-medium whitespace-nowrap"
       >
-        📷
+        <span aria-hidden>📷</span>
+        <span className="hidden sm:inline text-xs text-neutral-600">Camera</span>
       </button>
       {open ? (
         <CameraScanner

@@ -47,6 +47,7 @@ export default function TechReceivePage(): React.ReactElement {
   const [existing, setExisting] = useState<Asset | null>(null);
   const [pendingTag, setPendingTag] = useState<string>("");
   const [modelIdx, setModelIdx] = useState<number>(0);
+  const [showMoreModels, setShowMoreModels] = useState<boolean>(false);
   const [serial, setSerial] = useState<string>("");
   const [dock, setDock] = useState<string>("Lab-Building-A/Receiving/DOCK-1");
   const [error, setError] = useState<{ code: string; message: string; details?: any } | null>(null);
@@ -159,13 +160,13 @@ export default function TechReceivePage(): React.ReactElement {
           <div className="text-xs uppercase tracking-wider text-neutral-500">New asset · {pendingTag}</div>
 
           <div>
-            <div className="text-xs text-neutral-500 mb-2">Model — tap a common one, or pick from the list below</div>
+            <div className="text-xs text-neutral-500 mb-2">Model — tap a common one</div>
             <div className="grid grid-cols-2 gap-2">
               {MODELS.slice(0, 6).map((m, i) => (
                 <button
                   key={i}
                   type="button"
-                  onClick={() => setModelIdx(i)}
+                  onClick={() => { setModelIdx(i); setShowMoreModels(false); }}
                   className={`text-left p-2 rounded border text-xs leading-tight transition ${
                     modelIdx === i
                       ? "border-neutral-900 bg-neutral-900 text-white"
@@ -177,22 +178,33 @@ export default function TechReceivePage(): React.ReactElement {
                 </button>
               ))}
             </div>
+            {showMoreModels || modelIdx >= 6 ? (
+              <label className="block text-sm mt-3">
+                <span className="block text-xs text-neutral-500 mb-1">Less common models</span>
+                <select
+                  value={modelIdx >= 6 ? modelIdx : ""}
+                  onChange={(e) => setModelIdx(Number(e.target.value))}
+                  className="w-full p-2 rounded border border-neutral-300 bg-neutral-50"
+                >
+                  <option value="" disabled>Pick a less common model…</option>
+                  {MODELS.slice(6).map((m, i) => (
+                    <option key={i + 6} value={i + 6}>
+                      {m.manufacturer} · {m.model}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowMoreModels(true)}
+                className="mt-2 text-xs text-neutral-500 hover:text-neutral-700 underline"
+              >
+                None of these? Show {MODELS.length - 6} more →
+              </button>
+            )}
           </div>
 
-          <label className="block text-sm">
-            <span className="block text-xs text-neutral-500 mb-1">Or pick a less common one</span>
-            <select
-              value={modelIdx}
-              onChange={(e) => setModelIdx(Number(e.target.value))}
-              className="w-full p-2 rounded border border-neutral-300 bg-neutral-50"
-            >
-              {MODELS.map((m, i) => (
-                <option key={i} value={i}>
-                  {m.manufacturer} · {m.model}
-                </option>
-              ))}
-            </select>
-          </label>
           <label className="block text-sm">
             <span className="block text-xs text-neutral-500 mb-1">Serial (from vendor sticker)</span>
             <div className="flex gap-2">
@@ -221,9 +233,9 @@ export default function TechReceivePage(): React.ReactElement {
             type="button"
             onClick={submit}
             disabled={!serial || busy}
-            className="w-full bg-neutral-900 text-white py-2 rounded-md text-sm font-medium hover:bg-neutral-800 disabled:bg-neutral-300"
+            className="w-full bg-neutral-900 text-white py-2 rounded-md text-sm font-medium hover:bg-neutral-800 disabled:bg-neutral-400 disabled:text-neutral-100"
           >
-            {busy ? "Receiving…" : "Receive asset"}
+            {busy ? "Receiving…" : !serial ? "Scan or type the vendor serial to continue" : "Receive asset"}
           </button>
         </div>
       ) : null}
