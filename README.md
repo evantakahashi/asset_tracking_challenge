@@ -2,7 +2,8 @@
 
 Take-home for Cerebras' AI Engineering Intern, Manufacturing role.
 
-- **Live:** _(set after deploy — Vercel URL)_
+- **Live:** [asset-tracking-challenge-starter-five.vercel.app](https://asset-tracking-challenge-starter-five.vercel.app)
+- **API:** [asset-tracking-evan.fly.dev](https://asset-tracking-evan.fly.dev) (Fly.io · SQLite on 1GB volume)
 - **Loom:** _(set after recording)_
 - **Spec history:** [`docs/superpowers/specs/`](./docs/superpowers/specs/) · [Implementation plans](./docs/superpowers/plans/)
 
