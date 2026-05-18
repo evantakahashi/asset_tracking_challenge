@@ -22,3 +22,16 @@ export function labelFor(card: Pick<DriftCard, "category" | "context">): string 
 export function staticLabelFor(category: DriftCategory): string {
   return STATIC_LABELS[category];
 }
+
+export type Owner = "tech" | "facilities" | "procurement" | "finance";
+
+export const CATEGORY_OWNER: Record<DriftCategory, Owner> = {
+  mislocated: "tech",
+  ghost_on_rack: "facilities",
+  orphan_on_rack: "tech",
+  missing_from_facilities: "tech",
+  off_books: "procurement",
+  ghost_on_books: "procurement",
+  disposed_but_capitalized: "finance",
+  stale_rack_obs: "tech",
+};
