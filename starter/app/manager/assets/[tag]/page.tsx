@@ -64,6 +64,12 @@ export default async function ManagerAssetDetailPage({
         </section>
       ) : null}
 
+      {/* Subtraction notice — read-only by design */}
+      <div className="border-l-2 border-neutral-300 pl-3 text-xs text-neutral-500 italic font-serif">
+        Read-only by design. Drift resolves via physical scan (techs) or in the owning system (facilities, finance) — there&apos;s no manager-side write button.{" "}
+        {hasDrift ? <Link href="/manager" className="not-italic underline">See the action list →</Link> : null}
+      </div>
+
       {/* EVENT HISTORY — the lede */}
       <section>
         <h2 className="font-mono text-[10px] uppercase tracking-[0.1em] text-neutral-500 font-semibold mb-3">
