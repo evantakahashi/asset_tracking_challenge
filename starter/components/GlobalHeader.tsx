@@ -16,8 +16,7 @@ const TECH_NAV: NavItem[] = [
 ];
 
 const MANAGER_NAV: NavItem[] = [
-  { href: "/manager", label: "Directory" },
-  { href: "/manager/reconcile", label: "Reconcile" },
+  { href: "/manager", label: "Today" },
 ];
 
 const ROLE_USER_ID: Record<Role, string> = { tech: "tech-jane", manager: "manager-paul" };

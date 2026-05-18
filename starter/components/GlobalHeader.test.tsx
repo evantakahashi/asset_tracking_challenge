@@ -17,11 +17,11 @@ function clearCookies(): void {
 describe("GlobalHeader", () => {
   beforeEach(() => clearCookies());
 
-  it("manager role shows Directory and Reconcile nav items", () => {
+  it("manager role shows the Today nav item", () => {
     setRoleCookie("manager");
     render(<GlobalHeader pathname="/manager" />);
-    expect(screen.getByText("Directory")).toBeInTheDocument();
-    expect(screen.getByText("Reconcile")).toBeInTheDocument();
+    expect(screen.getByText("Today")).toBeInTheDocument();
+    expect(screen.queryByText("Reconcile")).not.toBeInTheDocument();
     expect(screen.queryByText("Receive")).not.toBeInTheDocument();
   });
 
@@ -32,7 +32,7 @@ describe("GlobalHeader", () => {
     expect(screen.getByText("Store")).toBeInTheDocument();
     expect(screen.getByText("Deploy")).toBeInTheDocument();
     expect(screen.getByText("Transfer")).toBeInTheDocument();
-    expect(screen.queryByText("Directory")).not.toBeInTheDocument();
+    expect(screen.queryByText("Today")).not.toBeInTheDocument();
   });
 
   it("defaults to tech when no cookie set", () => {
@@ -42,8 +42,7 @@ describe("GlobalHeader", () => {
 
   it("active section is rendered with aria-current", () => {
     setRoleCookie("manager");
-    render(<GlobalHeader pathname="/manager/reconcile" />);
-    expect(screen.getByText("Reconcile")).toHaveAttribute("aria-current", "page");
-    expect(screen.getByText("Directory")).not.toHaveAttribute("aria-current");
+    render(<GlobalHeader pathname="/manager" />);
+    expect(screen.getByText("Today")).toHaveAttribute("aria-current", "page");
   });
 });
