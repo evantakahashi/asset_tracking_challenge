@@ -4,7 +4,7 @@ import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { ScanInput } from "@/components/ScanInput";
 import { AssetCard } from "@/components/scan/AssetCard";
-import { ScanReceipt } from "@/components/scan/ScanReceipt";
+import { ScanSuccessOverlay } from "@/components/scan/ScanSuccessOverlay";
 import { ScanLog } from "@/components/scan/ScanLog";
 import { ApiErrorBanner } from "@/components/ApiErrorBanner";
 import { EmptyState } from "@/components/EmptyState";
@@ -116,7 +116,14 @@ export default function TechTransferPage(): React.ReactElement {
 
       {error ? <ApiErrorBanner code={error.code} message={error.message} details={error.details} codeMessages={ERROR_MESSAGES} /> : null}
 
-      {receipt ? <ScanReceipt asset={receipt} verb="Transferred" detail={`now held by ${receipt.custodian}`} /> : null}
+      {receipt ? (
+        <ScanSuccessOverlay
+          asset={receipt}
+          verb="Transferred"
+          detail={`now held by ${receipt.custodian}`}
+          onDismiss={() => setReceipt(null)}
+        />
+      ) : null}
 
       <ScanLog entries={log.entries} emptyHint="No scans yet on this device." />
     </div>

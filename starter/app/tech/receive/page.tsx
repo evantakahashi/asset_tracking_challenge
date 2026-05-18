@@ -4,7 +4,7 @@ import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { ScanInput } from "@/components/ScanInput";
 import { AssetCard } from "@/components/scan/AssetCard";
-import { ScanReceipt } from "@/components/scan/ScanReceipt";
+import { ScanSuccessOverlay } from "@/components/scan/ScanSuccessOverlay";
 import { ScanLog } from "@/components/scan/ScanLog";
 import { ApiErrorBanner } from "@/components/ApiErrorBanner";
 import { api, ApiError } from "@/lib/api-client";
@@ -244,10 +244,11 @@ export default function TechReceivePage(): React.ReactElement {
       ) : null}
 
       {receipt ? (
-        <ScanReceipt
+        <ScanSuccessOverlay
           asset={receipt}
           verb="Received"
           detail={`at ${receipt.location.room}/${receipt.location.rack ?? ""}`}
+          onDismiss={() => setReceipt(null)}
         />
       ) : null}
 
