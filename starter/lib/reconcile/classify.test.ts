@@ -97,9 +97,18 @@ describe("classifyDrift", () => {
     });
   });
 
-  it("flags off_books when ops has the asset and finance has no record", () => {
+  it("flags missing_from_facilities when ops is in_service but facilities has no row", () => {
+    const result = classifyDrift(ops(), null, fin(), NOW);
+    expect(result).toMatchObject({
+      category: "missing_from_facilities",
+      tier: "today",
+      asset_tag: "C0000001",
+    });
+  });
+
+  it("missing_from_facilities wins over off_books when both apply (Tier 1 vs Tier 2)", () => {
     const result = classifyDrift(ops(), null, null, NOW);
-    expect(result).toMatchObject({ category: "off_books", tier: "this_week" });
+    expect(result).toMatchObject({ category: "missing_from_facilities", tier: "today" });
   });
 
   it("flags off_books even when facilities has a row (joint check is ops+!finance)", () => {

@@ -28,6 +28,8 @@ function summary(card: DriftCard): string {
       return `ops ${ops} · facilities ${shortRack(fac)} · finance ${fin}`;
     case "orphan_on_rack":
       return `ops — · facilities ${shortRack(fac)} · finance —`;
+    case "missing_from_facilities":
+      return `ops ${ops} · facilities — · finance ${fin}`;
     case "off_books":
       return `ops ${ops} · facilities — · finance missing`;
     case "ghost_on_books":

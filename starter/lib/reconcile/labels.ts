@@ -4,6 +4,7 @@ const STATIC_LABELS: Record<DriftCategory, string> = {
   mislocated: "Mislocated",
   ghost_on_rack: "Facilities still has it racked",
   orphan_on_rack: "Untagged asset in a rack",
+  missing_from_facilities: "Missing from facilities",
   off_books: "Off the books",
   ghost_on_books: "Ghost on the books",
   disposed_but_capitalized: "Still on the books after disposal",

@@ -90,6 +90,21 @@ export function classifyDrift(
     };
   }
 
+  if (ops && !facilities && ops.state === "in_service") {
+    return {
+      category: "missing_from_facilities",
+      tier: "today",
+      asset_tag: tag,
+      views: {
+        ops: opsView(ops),
+        facilities: null,
+        finance: finance ? finView(finance) : null,
+      },
+      action: "Re-scan store or deploy to fire the facilities write-back. If the rack is empty, the asset may have been moved without scanning.",
+      age_days: age,
+    };
+  }
+
   if (ops && facilities && (ops.state === "disposed" || ops.state === "rma_pending")) {
     return {
       category: "ghost_on_rack",

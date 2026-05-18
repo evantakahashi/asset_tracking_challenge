@@ -4,6 +4,7 @@ export type DriftCategory =
   | "mislocated"
   | "ghost_on_rack"
   | "orphan_on_rack"
+  | "missing_from_facilities"
   | "off_books"
   | "ghost_on_books"
   | "disposed_but_capitalized"

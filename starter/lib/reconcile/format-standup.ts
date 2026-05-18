@@ -4,6 +4,7 @@ const SHORT_LABEL: Record<DriftCard["category"], string> = {
   mislocated: "Mislocated",
   ghost_on_rack: "Facilities still has it racked",
   orphan_on_rack: "Untagged asset in a rack",
+  missing_from_facilities: "Missing from facilities",
   off_books: "Off the books",
   ghost_on_books: "Ghost on the books",
   disposed_but_capitalized: "Still on the books after disposal",
@@ -27,6 +28,8 @@ function shortSummary(card: DriftCard): string {
       return `ops ${ops}, fac ${shortRack(fac)}`;
     case "orphan_on_rack":
       return `only in facilities at ${shortRack(fac)}`;
+    case "missing_from_facilities":
+      return `ops ${ops}, no facilities row`;
     case "off_books":
       return "missing finance record";
     case "ghost_on_books":
