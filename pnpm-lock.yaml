@@ -47,6 +47,9 @@ importers:
       '@zxing/browser':
         specifier: ^0.2.0
         version: 0.2.0(@zxing/library@0.22.0)
+      '@zxing/library':
+        specifier: ^0.22.0
+        version: 0.22.0
       bwip-js:
         specifier: ^4.10.1
         version: 4.10.1

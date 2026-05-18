@@ -37,10 +37,12 @@ function Barcode({ value }: { value: string }): React.ReactElement {
       bwipjs.toCanvas(ref.current, {
         bcid: "code128",
         text: value,
-        scale: 2,
-        height: 12,
+        scale: 4,
+        height: 18,
         includetext: false,
         backgroundcolor: "FFFFFF",
+        paddingwidth: 8,
+        paddingheight: 8,
       });
     } catch {
       // bwipjs is forgiving; ignore failures gracefully

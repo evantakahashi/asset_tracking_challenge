@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BrowserMultiFormatReader } from "@zxing/browser";
+import { DecodeHintType, BarcodeFormat } from "@zxing/library";
 
 export function CameraScanner({
   onDecoded,
@@ -10,21 +11,31 @@ export function CameraScanner({
   onClose: () => void;
 }): React.ReactElement {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [status, setStatus] = useState<"starting" | "scanning" | "denied" | "no_device">("starting");
+  const [frames, setFrames] = useState(0);
 
   useEffect(() => {
-    const reader = new BrowserMultiFormatReader();
+    const hints = new Map();
+    hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.CODE_128, BarcodeFormat.QR_CODE, BarcodeFormat.CODE_39]);
+    hints.set(DecodeHintType.TRY_HARDER, true);
+
+    const reader = new BrowserMultiFormatReader(hints);
     let controls: { stop: () => void } | null = null;
 
     (async () => {
       try {
-        controls = await reader.decodeFromVideoDevice(undefined, videoRef.current!, (result, _err) => {
+        controls = await reader.decodeFromVideoDevice(undefined, videoRef.current!, (result, err) => {
           if (result) {
             onDecoded(result.getText());
+            return;
           }
-          // _err is normal between frames — ignore
+          if (err && err.name !== "NotFoundException") return;
+          setFrames((n) => n + 1);
         });
-      } catch {
-        // permission denied or no camera — caller can show the button as disabled next time
+        setStatus("scanning");
+      } catch (e) {
+        const name = (e as Error)?.name;
+        setStatus(name === "NotAllowedError" ? "denied" : "no_device");
       }
     })();
 
@@ -43,11 +54,23 @@ export function CameraScanner({
       </div>
       <div className="flex-1 flex items-center justify-center">
         <div className="relative w-full max-w-md aspect-square">
-          <video ref={videoRef} className="w-full h-full object-cover rounded" />
+          <video ref={videoRef} className="w-full h-full object-cover rounded" autoPlay playsInline muted />
           <div className="absolute inset-8 border-2 border-white/40 rounded pointer-events-none" />
+          <div className="absolute top-2 left-2 flex items-center gap-2 px-2 py-1 rounded bg-black/60 text-white text-[11px] font-mono">
+            <span className={status === "scanning" ? "inline-block w-2 h-2 rounded-full bg-green-400 animate-pulse" : "inline-block w-2 h-2 rounded-full bg-neutral-500"} />
+            {status === "starting" && "starting camera…"}
+            {status === "scanning" && `scanning · ${frames} frames`}
+            {status === "denied" && "camera permission denied"}
+            {status === "no_device" && "no camera available"}
+          </div>
         </div>
       </div>
-      <p className="text-center text-xs text-neutral-500 pb-4">Hold the camera steady. Frame the barcode inside the box.</p>
+      <div className="px-4 pb-4 space-y-2 text-center">
+        <p className="text-xs text-neutral-400">Fill the box with the barcode. If scanning from a screen, hold ~15cm away with the barcode large.</p>
+        <button type="button" onClick={onClose} className="text-xs text-neutral-300 underline hover:text-white">
+          Type the tag instead
+        </button>
+      </div>
     </div>
   );
 }
