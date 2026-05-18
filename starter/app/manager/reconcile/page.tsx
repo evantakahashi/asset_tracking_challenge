@@ -1,7 +1,6 @@
 import { PageHeader } from "@/components/PageHeader";
 import { DriftCard } from "./_components/DriftCard";
 import { LastVisitBand } from "./_components/LastVisitBand";
-import { TrendWidget } from "./_components/TrendWidget";
 import { PrintLayout } from "./_components/PrintLayout";
 import { ReconcileStickyBar } from "./_components/ReconcileStickyBar";
 import type { ReconcileReport } from "@/lib/reconcile/types";
@@ -47,7 +46,6 @@ export default async function ManagerReconcilePage(): Promise<React.ReactElement
         <p className="text-xs text-neutral-500 font-mono mt-0.5">Generated {new Date(report.generated_at).toLocaleString()}</p>
 
         <ReconcileStickyBar report={report} />
-        <TrendWidget report={report} />
         <LastVisitBand current={currentKeys} />
 
         {total === 0 ? (
