@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { ScanInput } from "@/components/ScanInput";
 import { AssetCard } from "@/components/scan/AssetCard";
 import { ScanSuccessOverlay } from "@/components/scan/ScanSuccessOverlay";
+import { LastScanStrip } from "@/components/scan/LastScanStrip";
 import { ScanLog } from "@/components/scan/ScanLog";
 import { ApiErrorBanner } from "@/components/ApiErrorBanner";
 import { EmptyState } from "@/components/EmptyState";
@@ -117,6 +118,8 @@ export default function TechDeployPage(): React.ReactElement {
           <button type="button" onClick={() => setAsset(null)} className="text-xs text-neutral-500 hover:text-neutral-700">Cancel — scan a different asset</button>
         </>
       )}
+
+      <LastScanStrip scanType="deploy" userId={userId} />
 
       {!asset && !receipt && !error ? (
         <EmptyState

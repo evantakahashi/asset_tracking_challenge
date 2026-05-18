@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { ScanInput } from "@/components/ScanInput";
 import { AssetCard } from "@/components/scan/AssetCard";
 import { ScanSuccessOverlay } from "@/components/scan/ScanSuccessOverlay";
+import { LastScanStrip } from "@/components/scan/LastScanStrip";
 import { ScanLog } from "@/components/scan/ScanLog";
 import { ApiErrorBanner } from "@/components/ApiErrorBanner";
 import { EmptyState } from "@/components/EmptyState";
@@ -118,6 +119,8 @@ export default function TechStorePage(): React.ReactElement {
           </button>
         </>
       )}
+
+      <LastScanStrip scanType="store" userId={userId} />
 
       {!asset && !receipt && !error ? (
         <EmptyState

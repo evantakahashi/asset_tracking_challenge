@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { ScanInput } from "@/components/ScanInput";
 import { AssetCard } from "@/components/scan/AssetCard";
 import { ScanSuccessOverlay } from "@/components/scan/ScanSuccessOverlay";
+import { LastScanStrip } from "@/components/scan/LastScanStrip";
 import { ScanLog } from "@/components/scan/ScanLog";
 import { ApiErrorBanner } from "@/components/ApiErrorBanner";
 import { api, ApiError } from "@/lib/api-client";
@@ -139,6 +140,8 @@ export default function TechReceivePage(): React.ReactElement {
       />
 
       <ScanInput onScan={onTagScan} label="Asset tag" placeholder="Scan or type a tag" disabled={busy} />
+
+      <LastScanStrip scanType="receive" userId={userId} />
 
       {mode === "idle" && !receipt && !error ? (
         <EmptyState
