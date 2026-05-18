@@ -60,13 +60,20 @@ function emptyMessage(params: Record<string, string | undefined>): string {
   return "No assets match these filters.";
 }
 
+function timePhrase(now: Date): string {
+  const h = now.getHours();
+  if (h < 12) return "this morning";
+  if (h < 17) return "this afternoon";
+  return "this evening";
+}
+
 function leadSentence(report: ReconcileReport | null): string {
   if (!report) return "Loading the operational view.";
   const { today: t, this_week: w, watch: v } = report.counts;
   if (t === 0 && w === 0 && v === 0) return "All tracked assets agree across operations, facilities, and finance today.";
   const spell = (n: number) => ["zero","one","two","three","four","five","six","seven","eight","nine","ten"][n] ?? String(n);
   const phrases: string[] = [];
-  if (t > 0) phrases.push(`${t === 1 ? "One thing" : `${spell(t)} things`} to look at this morning`);
+  if (t > 0) phrases.push(`${t === 1 ? "One thing" : `${spell(t)} things`} to look at ${timePhrase(new Date())}`);
   if (w > 0) phrases.push(`${spell(w)} this week`);
   if (v > 0) phrases.push(`${spell(v)} to watch`);
   return phrases.join(". ") + ".";
