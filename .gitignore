@@ -18,3 +18,4 @@ api/data/
 
 # Superpowers brainstorming companion
 .superpowers/
+.vercel
