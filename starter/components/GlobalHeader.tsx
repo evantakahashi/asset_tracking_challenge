@@ -35,7 +35,7 @@ export function GlobalHeader({ pathname: pathnameProp }: { pathname?: string }):
   useEffect(() => {
     setMounted(true);
     setRoleState(getRole());
-  }, []);
+  }, [livePathname]);
 
   const effectiveRole: Role = mounted ? role : "tech";
   const nav = effectiveRole === "manager" ? MANAGER_NAV : TECH_NAV;
