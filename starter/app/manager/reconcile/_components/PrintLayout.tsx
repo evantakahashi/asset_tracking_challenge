@@ -37,7 +37,7 @@ function summary(card: DriftCard): string {
     case "disposed_but_capitalized":
       return `ops disposed · facilities — · finance ${fin}`;
     case "stale_rack_obs":
-      return `ops ${ops} · facilities last observed ${card.context?.toLowerCase() ?? "long ago"}`;
+      return `ops ${ops} · facilities ${card.context?.toLowerCase() ?? "last seen long ago"}`;
   }
 }
 
@@ -81,13 +81,13 @@ function Section({ title, color, items, startIdx }: { title: string; color: "red
 export async function PrintLayout({ report }: { report: ReconcileReport }): Promise<React.ReactElement> {
   const cookieStore = await cookies();
   const role = cookieStore.get("asset-challenge-role")?.value;
-  const generatedBy = role === "manager" ? "manager-paul" : role === "tech" ? "tech-jane" : "asset-tracking-app";
+  const generatedBy = role === "manager" ? "manager-paul" : role === "tech" ? "tech-jane" : "auto-generated";
   const now = new Date(report.generated_at);
 
   const total = report.counts.today + report.counts.this_week + report.counts.watch;
 
   return (
-    <div className="hidden print:block px-10 py-8 text-neutral-900">
+    <div className="px-10 py-8 text-neutral-900 bg-white print:bg-white border border-neutral-200 rounded-md print:border-0 max-w-3xl mx-auto print:max-w-none">
       <header className="flex justify-between items-end pb-3 border-b-2 border-neutral-900">
         <div>
           <h1 className="font-serif italic text-2xl font-semibold">Reconciliation report</h1>

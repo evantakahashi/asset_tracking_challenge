@@ -1,10 +1,9 @@
+import Link from "next/link";
 import { api } from "@/lib/api-client";
 import { DriftList } from "./_components/DriftList";
 import { BrowseAllAssets } from "./_components/BrowseAllAssets";
 import { LastVisitBand } from "./reconcile/_components/LastVisitBand";
 import { CopyForStandupButton } from "./reconcile/_components/CopyForStandupButton";
-import { PrintButton } from "./reconcile/_components/PrintButton";
-import { PrintLayout } from "./reconcile/_components/PrintLayout";
 import { BlockedBand } from "./_components/BlockedBand";
 import { computeReconcileReport } from "@/lib/reconcile/compute";
 import type { Asset } from "@/lib/types";
@@ -20,13 +19,24 @@ async function fetchReport(): Promise<ReconcileReport | null> {
   }
 }
 
-function filterAssets(all: Asset[], state: string | undefined, site: string | undefined, q: string | undefined): Asset[] {
+function parseOlderThanMs(value: string | undefined): number | null {
+  if (!value) return null;
+  const match = value.match(/^(\d+)(h|d)$/);
+  if (!match) return null;
+  const n = Number(match[1]);
+  return match[2] === "h" ? n * 3600_000 : n * 86400_000;
+}
+
+function filterAssets(all: Asset[], state: string | undefined, site: string | undefined, q: string | undefined, olderThan: string | undefined): Asset[] {
   const stateF = state && state !== "all" ? state : null;
   const siteF = site && site !== "all" ? site : null;
   const qF = q?.toLowerCase().trim() ?? "";
+  const olderThanMs = parseOlderThanMs(olderThan);
+  const cutoff = olderThanMs != null ? new Date(Date.now() - olderThanMs) : null;
   return all.filter((a) => {
     if (stateF && a.state !== stateF) return false;
     if (siteF && a.location.site !== siteF) return false;
+    if (cutoff && new Date(a.updated_at) >= cutoff) return false;
     if (qF) {
       const hay = [a.asset_tag, a.serial, a.custodian, a.model].join(" ").toLowerCase();
       if (!hay.includes(qF)) return false;
@@ -78,7 +88,7 @@ export default async function ManagerPage({
   const longStored = assets.filter((a) => a.state === "stored" && new Date(a.updated_at) < thirtyDaysAgo()).length;
   const oldRma = assets.filter((a) => a.state === "rma_pending" && new Date(a.updated_at) < fourteenDaysAgo()).length;
 
-  const filtered = filterAssets(assets, params.state, params.site, params.q);
+  const filtered = filterAssets(assets, params.state, params.site, params.q, params.olderThan);
   const page = Number(params.page ?? "1");
   const visible = filtered.slice(0, page * PAGE_SIZE);
   const hasMore = visible.length < filtered.length;
@@ -90,50 +100,52 @@ export default async function ManagerPage({
   const ownerFilter = params.owner;
 
   return (
-    <>
-      {report ? <PrintLayout report={report} /> : null}
-      <div className="space-y-8 print:hidden">
-        <header>
-          <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-neutral-500 mb-2">
-            / manager · {nowHeader()}
-          </div>
-          <h1 className="font-serif italic text-[28px] leading-tight tracking-tight text-neutral-900 max-w-2xl">
-            {leadSentence(report)}
-          </h1>
-        </header>
+    <div className="space-y-8">
+      <header>
+        <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-neutral-500 mb-2">
+          / manager · {nowHeader()}
+        </div>
+        <h1 className="font-serif italic text-[28px] leading-tight tracking-tight text-neutral-900 max-w-2xl">
+          {leadSentence(report)}
+        </h1>
+      </header>
 
-        <BlockedBand longReceived={longReceived} longStored={longStored} oldRma={oldRma} />
+      <BlockedBand longReceived={longReceived} longStored={longStored} oldRma={oldRma} />
 
-        {report ? <LastVisitBand current={currentKeys} /> : null}
+      {report ? <LastVisitBand current={currentKeys} /> : null}
 
-        {report ? (
-          <section className="space-y-3">
-            <div className="flex items-center justify-between gap-3 sticky top-[88px] z-20 bg-neutral-50 -mx-4 px-4 py-2 border-b border-neutral-200">
-              <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-neutral-500 font-semibold">
-                Drift · {report.counts.today + report.counts.this_week + report.counts.watch}
-                {ownerFilter ? <span className="ml-2 text-neutral-700">· filtered to {ownerFilter}</span> : null}
-              </div>
-              <div className="flex gap-2">
-                <CopyForStandupButton report={report} />
-                <PrintButton />
-              </div>
+      {report ? (
+        <section className="space-y-3">
+          <div className="flex items-center justify-between gap-3 sticky top-[88px] z-20 bg-neutral-50 -mx-4 px-4 py-2 border-b border-neutral-200">
+            <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-neutral-500 font-semibold">
+              Drift · {report.counts.today + report.counts.this_week + report.counts.watch}
+              {ownerFilter ? <span className="ml-2 text-neutral-700">· filtered to {ownerFilter}</span> : null}
             </div>
-            <DriftList report={report} ownerFilter={ownerFilter} />
-          </section>
-        ) : null}
+            <div className="flex gap-2">
+              <CopyForStandupButton report={report} />
+              <Link
+                href="/manager/reconcile"
+                className="inline-flex items-center gap-1.5 text-xs text-neutral-700 bg-white border border-neutral-300 hover:bg-neutral-50 px-2.5 py-1 rounded-md"
+              >
+                Open report →
+              </Link>
+            </div>
+          </div>
+          <DriftList report={report} ownerFilter={ownerFilter} />
+        </section>
+      ) : null}
 
-        <BrowseAllAssets
-          assets={assets}
-          filtered={filtered}
-          visible={visible}
-          hasMore={hasMore}
-          filteredCount={filtered.length}
-          pageSize={PAGE_SIZE}
-          visibleCount={visible.length}
-          params={params}
-          emptyMessage={emptyMessage(params)}
-        />
-      </div>
-    </>
+      <BrowseAllAssets
+        assets={assets}
+        filtered={filtered}
+        visible={visible}
+        hasMore={hasMore}
+        filteredCount={filtered.length}
+        pageSize={PAGE_SIZE}
+        visibleCount={visible.length}
+        params={params}
+        emptyMessage={emptyMessage(params)}
+      />
+    </div>
   );
 }
