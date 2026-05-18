@@ -56,13 +56,12 @@ describe("formatStandupPunchList", () => {
     expect(watchIdx).toBeGreaterThan(weekIdx);
   });
 
-  it("wraps tags in backticks and prepends a category code", () => {
+  it("wraps tags in backticks for Slack-compatible mrkdwn", () => {
     const r = emptyReport();
     r.tiers.today = [card({})];
     r.counts.today = 1;
     const out = formatStandupPunchList(r, NOW);
     expect(out).toContain("`C0000001`");
-    expect(out).toContain("[MIS]");
   });
 
   it("has no trailing whitespace or double-newlines", () => {

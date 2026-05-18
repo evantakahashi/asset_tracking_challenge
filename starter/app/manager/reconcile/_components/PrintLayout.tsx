@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import type { DriftCard, ReconcileReport } from "@/lib/reconcile/types";
-import { CATEGORY_CODE, labelFor } from "@/lib/reconcile/labels";
+import { labelFor } from "@/lib/reconcile/labels";
 
 function dateFor(now: Date): string {
   return now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
@@ -56,7 +56,6 @@ function Section({ title, color, items, startIdx }: { title: string; color: "red
             <span className="font-mono text-[11px] font-semibold text-neutral-500">{startIdx + i + 1}.</span>
             <div>
               <div className="flex items-baseline gap-2">
-                <span className="font-mono text-[10px] font-bold tracking-wider text-neutral-700">[{CATEGORY_CODE[c.category]}]</span>
                 <span className="font-serif italic text-[13px] font-semibold">{labelFor(c)}</span>
                 <span className="font-mono text-[11px] font-semibold ml-auto">{c.asset_tag}</span>
               </div>

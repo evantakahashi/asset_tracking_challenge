@@ -1,5 +1,4 @@
 import type { DriftCard, ReconcileReport } from "./types";
-import { CATEGORY_CODE } from "./labels";
 
 const SHORT_LABEL: Record<DriftCard["category"], string> = {
   mislocated: "Mislocated",
@@ -45,7 +44,7 @@ function shortAction(card: DriftCard): string {
 }
 
 function line(card: DriftCard): string {
-  return `• \`${card.asset_tag}\` [${CATEGORY_CODE[card.category]}] — ${SHORT_LABEL[card.category]} · ${shortSummary(card)} — ${shortAction(card)}`;
+  return `• \`${card.asset_tag}\` — ${SHORT_LABEL[card.category]} · ${shortSummary(card)} — ${shortAction(card)}`;
 }
 
 function dateHeader(now: Date): string {

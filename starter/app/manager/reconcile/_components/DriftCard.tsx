@@ -1,18 +1,12 @@
 import clsx from "clsx";
 import { Tag } from "@/components/Tag";
 import type { DriftCard as DriftCardType } from "@/lib/reconcile/types";
-import { CATEGORY_CODE, labelFor } from "@/lib/reconcile/labels";
+import { labelFor } from "@/lib/reconcile/labels";
 
 const TIER_BAR: Record<string, string> = {
   today: "bg-red-600",
   this_week: "bg-amber-500",
   watch: "bg-neutral-500",
-};
-
-const CODE_TINT: Record<string, string> = {
-  today: "bg-red-50 text-red-700 border-red-200",
-  this_week: "bg-amber-50 text-amber-700 border-amber-200",
-  watch: "bg-neutral-100 text-neutral-600 border-neutral-200",
 };
 
 export function DriftCard({ card }: { card: DriftCardType }): React.ReactElement {
@@ -23,14 +17,6 @@ export function DriftCard({ card }: { card: DriftCardType }): React.ReactElement
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0">
-            <span
-              className={clsx(
-                "font-mono font-bold text-[10px] px-1.5 py-0.5 rounded border tracking-wider",
-                CODE_TINT[card.tier],
-              )}
-            >
-              {CATEGORY_CODE[card.category]}
-            </span>
             <span className="font-serif italic text-sm font-semibold truncate">{labelFor(card)}</span>
           </div>
           <Tag value={card.asset_tag} href={`/manager/assets/${card.asset_tag}`} className="text-xs shrink-0" />
