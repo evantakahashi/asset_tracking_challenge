@@ -85,7 +85,7 @@ export function classifyDrift(
         facilities: facView(facilities),
         finance: finance ? finView(finance) : null,
       },
-      action: "Physical audit at this rack — barcode the instrument or remove the facilities row.",
+      action: "Physical audit: send a tech to barcode the instrument, or ask facilities to remove the orphaned row from their system.",
       age_days: age,
     };
   }
@@ -115,7 +115,7 @@ export function classifyDrift(
         facilities: facView(facilities),
         finance: finance ? finView(finance) : null,
       },
-      action: "Delete the facilities row — this asset isn't physically racked.",
+      action: "Ask facilities to remove this rack record from their system — the asset isn't there anymore. We don't have write access; this is a hand-off.",
       age_days: age,
     };
   }

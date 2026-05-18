@@ -15,8 +15,11 @@ export function BlockedBand({
 
   return (
     <section className="border-l-2 border-neutral-700 pl-4">
-      <div className="font-mono text-[10px] uppercase tracking-wider text-neutral-700 font-semibold mb-2">
-        Blocked · {total}
+      <div className="font-mono text-[10px] uppercase tracking-wider text-neutral-700 font-semibold">
+        Stalled · {total}
+      </div>
+      <div className="text-xs text-neutral-500 italic mb-2.5 mt-0.5">
+        Different from drift below: there, the systems disagree and need investigation. Here, everyone agrees — the asset just hasn&apos;t moved. Nudge a scan.
       </div>
       <ul className="space-y-1.5 text-sm font-serif text-neutral-700">
         {longReceived > 0 ? (

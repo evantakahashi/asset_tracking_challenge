@@ -1,6 +1,6 @@
 // starter/app/manager/_components/BrowseAllAssets.tsx
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Tag } from "@/components/Tag";
 import { StatePill } from "@/components/StatePill";
 import { ManagerFilters } from "./ManagerFilters";
@@ -21,8 +21,17 @@ interface Props {
 
 export function BrowseAllAssets({ assets, visible, hasMore, filteredCount, pageSize, visibleCount, params, emptyMessage }: Props): React.ReactElement {
   const [open, setOpen] = useState(params.expanded === "true");
+  const sectionRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (params.expanded === "true") {
+      setOpen(true);
+      sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [params.expanded, params.state]);
+
   return (
-    <section className="border-t border-neutral-200 pt-4">
+    <section ref={sectionRef} id="browse" className="border-t border-neutral-200 pt-4">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
